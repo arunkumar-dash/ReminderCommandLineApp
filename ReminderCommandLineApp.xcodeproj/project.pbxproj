@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1D8C83B9276081630061D276 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83B8276081630061D276 /* main.swift */; };
+		1D8C83C02761B6360061D276 /* Reminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83BF2761B6360061D276 /* Reminder.swift */; };
+		1D8C83C2276328E60061D276 /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83C1276328E60061D276 /* Printer.swift */; };
+		1DBA07502763361B0076C4C5 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DBA074F2763361B0076C4C5 /* Defaults.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +28,9 @@
 /* Begin PBXFileReference section */
 		1D8C83B5276081630061D276 /* ReminderCommandLineApp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ReminderCommandLineApp; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D8C83B8276081630061D276 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		1D8C83BF2761B6360061D276 /* Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminder.swift; sourceTree = "<group>"; };
+		1D8C83C1276328E60061D276 /* Printer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Printer.swift; sourceTree = "<group>"; };
+		1DBA074F2763361B0076C4C5 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +63,9 @@
 		1D8C83B7276081630061D276 /* ReminderCommandLineApp */ = {
 			isa = PBXGroup;
 			children = (
+				1DBA074F2763361B0076C4C5 /* Defaults.swift */,
+				1D8C83C1276328E60061D276 /* Printer.swift */,
+				1D8C83BF2761B6360061D276 /* Reminder.swift */,
 				1D8C83B8276081630061D276 /* main.swift */,
 			);
 			path = ReminderCommandLineApp;
@@ -120,7 +129,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1D8C83C2276328E60061D276 /* Printer.swift in Sources */,
+				1DBA07502763361B0076C4C5 /* Defaults.swift in Sources */,
 				1D8C83B9276081630061D276 /* main.swift in Sources */,
+				1D8C83C02761B6360061D276 /* Reminder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
