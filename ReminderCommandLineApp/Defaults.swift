@@ -29,16 +29,16 @@ class ReminderDefaults: Defaults {
     var repeatTiming: RepeatPattern
     var ringTimeList: Set<TimeInterval>
 //    let reminderView = ReminderView(self)
-    init(reminder: ReminderProtocol) {
+    init(addedTime: Date) {
         /// Default title for Reminder
-        title = "Reminder-\(reminder.addedTime.description(with: Locale.current))"
+        title = "Reminder-\(addedTime.description(with: Locale.current))"
         
-        /// Default description for Reminnder
+        /// Default description for Reminder
         description = "Your description goes here..."
         
         /// Default time when the Reminder rings
         /// Default time set here is one hour(3600 seconds) after the time when Reminder was added
-        eventTime = reminder.addedTime + 3600
+        eventTime = addedTime + 3600
         
         /// Default ringing sound of the Reminder
         sound = "Beethoven - Symphony No. 5"
