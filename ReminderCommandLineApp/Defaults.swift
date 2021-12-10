@@ -23,7 +23,7 @@ extension Defaults {
 
 class ReminderDefaults: Defaults {
     var title: String
-    var description: String?
+    var description: String
     var eventTime: Date
     var sound: String
     var repeatTiming: RepeatPattern

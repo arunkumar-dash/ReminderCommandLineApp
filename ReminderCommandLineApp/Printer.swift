@@ -6,9 +6,12 @@
 //
 
 import Foundation
-struct Printer<Element> {
+struct Printer {
     private init() {}
-    static func printToConsole(_ element: Element) {
+    static func printToConsole<Element>(_ element: Element) {
         print(element)
+    }
+    static func printLine() {
+        print(String(repeating: "-", count: 15))
     }
 }
