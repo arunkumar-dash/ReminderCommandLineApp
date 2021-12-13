@@ -14,4 +14,7 @@ struct Printer {
     static func printLine() {
         print(String(repeating: "-", count: 15))
     }
+    static func printBlankLine() {
+        print("")
+    }
 }

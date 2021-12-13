@@ -11,6 +11,9 @@
 		1D8C83C02761B6360061D276 /* Reminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83BF2761B6360061D276 /* Reminder.swift */; };
 		1D8C83C2276328E60061D276 /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83C1276328E60061D276 /* Printer.swift */; };
 		1DBA07502763361B0076C4C5 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DBA074F2763361B0076C4C5 /* Defaults.swift */; };
+		1DBA075227671F280076C4C5 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DBA075127671F280076C4C5 /* Input.swift */; };
+		1DBA0754276765470076C4C5 /* ReminderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DBA0753276765470076C4C5 /* ReminderController.swift */; };
+		1DBA0756276765970076C4C5 /* ReminderDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DBA0755276765970076C4C5 /* ReminderDB.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +34,9 @@
 		1D8C83BF2761B6360061D276 /* Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminder.swift; sourceTree = "<group>"; };
 		1D8C83C1276328E60061D276 /* Printer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Printer.swift; sourceTree = "<group>"; };
 		1DBA074F2763361B0076C4C5 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
+		1DBA075127671F280076C4C5 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
+		1DBA0753276765470076C4C5 /* ReminderController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderController.swift; sourceTree = "<group>"; };
+		1DBA0755276765970076C4C5 /* ReminderDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderDB.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +69,9 @@
 		1D8C83B7276081630061D276 /* ReminderCommandLineApp */ = {
 			isa = PBXGroup;
 			children = (
+				1DBA0755276765970076C4C5 /* ReminderDB.swift */,
+				1DBA0753276765470076C4C5 /* ReminderController.swift */,
+				1DBA075127671F280076C4C5 /* Input.swift */,
 				1DBA074F2763361B0076C4C5 /* Defaults.swift */,
 				1D8C83C1276328E60061D276 /* Printer.swift */,
 				1D8C83BF2761B6360061D276 /* Reminder.swift */,
@@ -129,10 +138,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1DBA075227671F280076C4C5 /* Input.swift in Sources */,
 				1D8C83C2276328E60061D276 /* Printer.swift in Sources */,
+				1DBA0756276765970076C4C5 /* ReminderDB.swift in Sources */,
 				1DBA07502763361B0076C4C5 /* Defaults.swift in Sources */,
 				1D8C83B9276081630061D276 /* main.swift in Sources */,
 				1D8C83C02761B6360061D276 /* Reminder.swift in Sources */,
+				1DBA0754276765470076C4C5 /* ReminderController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
