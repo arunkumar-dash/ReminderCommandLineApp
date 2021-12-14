@@ -9,7 +9,7 @@ import Foundation
 
 
 /// Type that returns a day of the week
-enum WeekDay: CaseIterable {
+enum WeekDay: CaseIterable, Codable {
     case monday
     case tuesday
     case wednesday
@@ -20,7 +20,7 @@ enum WeekDay: CaseIterable {
 }
 
 /// Pattern to repeat the `Reminder`
-enum RepeatPattern {
+enum RepeatPattern: Codable {
     /// Repeats every week
     case everyWeek
     /// Repeats every month
@@ -55,7 +55,7 @@ protocol ReminderProtocol {
 //    let reminderView = ReminderView(self)
 }
 
-struct Reminder: ReminderProtocol {
+struct Reminder: ReminderProtocol, Codable {
     
 //    let reminderView = ReminderView(self)
     var title: String
@@ -75,12 +75,6 @@ struct Reminder: ReminderProtocol {
         self.sound = defaults.setValue(mainValue: sound, defaultValue: defaults.sound)
         self.repeatTiming = defaults.setValue(mainValue: repeatTiming, defaultValue: defaults.repeatTiming)
         self.ringTimeList = defaults.setValue(mainValue: ringTimeList, defaultValue: defaults.ringTimeList)
-    }
-    func view() {
-        print("view reminder")
-    }
-    func edit() {
-        print("edit reminder")
     }
 }
 
