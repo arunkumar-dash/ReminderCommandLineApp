@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1D880797277AE9B700896BD4 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D880796277AE9B700896BD4 /* Player.swift */; };
 		1D8C83B9276081630061D276 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83B8276081630061D276 /* main.swift */; };
 		1D8C83C02761B6360061D276 /* Reminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83BF2761B6360061D276 /* Reminder.swift */; };
 		1D8C83C2276328E60061D276 /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83C1276328E60061D276 /* Printer.swift */; };
@@ -29,6 +30,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1D880796277AE9B700896BD4 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		1D8C83B5276081630061D276 /* ReminderCommandLineApp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ReminderCommandLineApp; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D8C83B8276081630061D276 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		1D8C83BF2761B6360061D276 /* Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminder.swift; sourceTree = "<group>"; };
@@ -69,12 +71,13 @@
 		1D8C83B7276081630061D276 /* ReminderCommandLineApp */ = {
 			isa = PBXGroup;
 			children = (
+				1D880796277AE9B700896BD4 /* Player.swift */,
 				1DBA07572768531A0076C4C5 /* Database.swift */,
 				1DBA0753276765470076C4C5 /* ReminderController.swift */,
 				1DBA075127671F280076C4C5 /* Input.swift */,
 				1DBA074F2763361B0076C4C5 /* Defaults.swift */,
-				1D8C83C1276328E60061D276 /* Printer.swift */,
 				1D8C83BF2761B6360061D276 /* Reminder.swift */,
+				1D8C83C1276328E60061D276 /* Printer.swift */,
 				1D8C83B8276081630061D276 /* main.swift */,
 			);
 			path = ReminderCommandLineApp;
@@ -108,7 +111,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1310;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					1D8C83B4276081630061D276 = {
 						CreatedOnToolsVersion = 13.1;
@@ -142,6 +145,7 @@
 				1D8C83C2276328E60061D276 /* Printer.swift in Sources */,
 				1DBA07502763361B0076C4C5 /* Defaults.swift in Sources */,
 				1D8C83B9276081630061D276 /* main.swift in Sources */,
+				1D880797277AE9B700896BD4 /* Player.swift in Sources */,
 				1D8C83C02761B6360061D276 /* Reminder.swift in Sources */,
 				1DBA07582768531A0076C4C5 /* Database.swift in Sources */,
 				1DBA0754276765470076C4C5 /* ReminderController.swift in Sources */,
@@ -269,6 +273,7 @@
 		1D8C83BD276081630061D276 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -278,6 +283,7 @@
 		1D8C83BE276081630061D276 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

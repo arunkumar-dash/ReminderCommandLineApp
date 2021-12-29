@@ -6,9 +6,13 @@
 //
 
 import Foundation
-
+/// Used to get input from user
 struct Input {
     private init() {}
+    /// Returns a `String` response from user
+    ///
+    /// - Parameter string: Displayed to user before getting input
+    /// - Returns: A `String` response from user
     static func getResponse(string: String? = nil) -> String {
         var response: String?
         while true {
@@ -23,6 +27,10 @@ struct Input {
             }
         }
     }
+    /// Returns a `Bool` response from user
+    ///
+    /// - Parameter string: Displayed to user before getting input
+    /// - Returns: A `Bool` value indicating the response of the user
     static func getBooleanResponse(string: String? = nil) -> Bool {
         var inputString: String?
         if string == nil {
@@ -39,7 +47,10 @@ struct Input {
             }
         }
     }
-    static func getEnumResponse<Enum: CaseIterable>(of enum: Enum) -> Enum {
+    /// Returns an `Enum` response from user input
+    ///
+    /// - Returns: A case of the `Enum` type from user input
+    static func getEnumResponse<Enum: CaseIterable>(type: Enum.Type) -> Enum {
         for (index, enumCase) in Enum.allCases.enumerated() {
             Printer.printToConsole("[\(index + 1)] \(enumCase)")
         }

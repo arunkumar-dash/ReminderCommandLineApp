@@ -21,6 +21,8 @@ enum WeekDay: CaseIterable, Codable {
 
 /// Pattern to repeat the `Reminder`
 enum RepeatPattern: Codable {
+    /// Repeats every day
+    case everyDay
     /// Repeats every week
     case everyWeek
     /// Repeats every month
@@ -54,17 +56,25 @@ protocol ReminderProtocol {
     
 //    let reminderView = ReminderView(self)
 }
-
+/// Returns a `Reminder` instance
 struct Reminder: ReminderProtocol, Codable {
     
 //    let reminderView = ReminderView(self)
+    /// The title of the Reminder
     var title: String
+    /// The description of the Reminder
     var description: String
+    /// The time when Reminder was added
     var addedTime: Date
+    /// The time when the Reminder should ring
     var eventTime: Date
+    /// The sound of the Reminder
     var sound: String
+    /// The `RepeatPattern` of the Reminder
     var repeatTiming: RepeatPattern
+    /// The list of `TimeInterval`s before the `eventTime` when the Reminder should ring
     var ringTimeList: Set<TimeInterval>
+    
     init(addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date? = nil,
          sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil) {
         self.addedTime = addedTime
@@ -77,7 +87,7 @@ struct Reminder: ReminderProtocol, Codable {
         self.ringTimeList = defaults.setValue(mainValue: ringTimeList, defaultValue: defaults.ringTimeList)
     }
 }
-
+// must display reminders in a linkedlist pattern, view as mp3 player showing songs but should be sorted by date... convert to linkedlist when viewed, else maintain as a sorted-by-date list/array. and converting to linkedlist must start from the selected view and asynchronously add links to its left and right(previous and next days)
 protocol ReminderViewProtocol {
     func dayView()
     func monthView()

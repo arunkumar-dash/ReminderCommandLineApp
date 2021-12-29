@@ -7,28 +7,42 @@
 
 import Foundation
 
+/// Conforming to this protocol will convert
 protocol Defaults {
 }
 
 extension Defaults {
+    /// Returns the `defaultValue` if the `mainValue` is `nil`, else returns `mainValue`
+    ///
+    /// - Parameters:
+    ///     - mainvalue: The mainValue which is considered if it is not nil
+    ///     - defaultValue: The value which should be considered if the `mainValue` is nil
     func setValue<Element>(mainValue: Element?, defaultValue: Element) -> Element {
-        if mainValue == nil {
-            return defaultValue
+        if let mainValue = mainValue {
+            return mainValue
         }
         else {
-            return mainValue!
+            return defaultValue
         }
     }
 }
 
+/// Returns the default values of the `Reminder` parameters
 class ReminderDefaults: Defaults {
+    /// The default title of the Reminder
     var title: String
+    /// The default description of the Reminder
     var description: String
+    /// The default time when the Reminder should ring
     var eventTime: Date
+    /// The default sound of the Reminder
     var sound: String
+    /// The default `RepeatPattern` of the Reminder
     var repeatTiming: RepeatPattern
+    /// The default ringTimeList of the Reminder, which is, an empty list
     var ringTimeList: Set<TimeInterval>
 //    let reminderView = ReminderView(self)
+    
     init(addedTime: Date) {
         /// Default title for Reminder
         title = "Reminder-\(addedTime.description(with: Locale.current))"
@@ -39,9 +53,9 @@ class ReminderDefaults: Defaults {
         /// Default time when the Reminder rings
         /// Default time set here is one hour(3600 seconds) after the time when Reminder was added
         eventTime = addedTime + 3600
-        
+
         /// Default ringing sound of the Reminder
-        sound = "Beethoven - Symphony No. 5"
+        sound = "sound.wav"
         
         /// Pattern when the Reminder repeats
         /// Default pattern is no repetitions

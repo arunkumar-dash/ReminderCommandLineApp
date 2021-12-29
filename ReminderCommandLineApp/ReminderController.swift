@@ -31,7 +31,9 @@ struct ReminderController {
     }
     /// Returns an optional string by getting availability of input from user
     ///
-    /// e.g., getOptionalValue(name: "title") gets the title? from the user
+    ///     getOptionalValue(name: "title")
+    ///     // gets the title? from the user
+    ///
     /// - Parameter name: The name of the value to be obtained from user
     /// - Returns: An optional string based on the availability of the value
     private func getOptionalValue(name: String) -> String? {
@@ -46,8 +48,8 @@ struct ReminderController {
     /// - Parameters:
     ///     - range: The `Range` within which the `Integer` should lie within
     ///     - name: The name of the value which we are obtaining
-    /// - Returns: The `Integer` obatined from the User
-    private func getInteger<AnyRange: RangeExpression>(range: AnyRange, name string: String? = nil) -> Int where AnyRange.Bound == Int{
+    /// - Returns: The `Integer` obtained from the User
+    private func getInteger<AnyRange: RangeExpression>(range: AnyRange, name string: String? = nil) -> Int where AnyRange.Bound == Int {
         while true {
             var response: String = ""
             if let inputString = string {
@@ -139,8 +141,8 @@ struct ReminderController {
         case 5:
             var weekDaySet: Set<WeekDay> = []
             repeat {
-                let enumCase = Input.getEnumResponse(of: WeekDay.monday)
-                weekDaySet.insert(enumCase)
+                let day = Input.getEnumResponse(type: WeekDay.self)
+                weekDaySet.insert(day)
             } while Input.getBooleanResponse(string: "Do you want to enter another Week Day?")
             return RepeatPattern.custom(weekDaySet)
         default:
@@ -171,7 +173,7 @@ struct ReminderController {
         var ringTimeList: Set<TimeInterval> = []
         repeat {
             let ringTime = TimeInterval(getInteger(range: 1...,
-                                      name: "Enter number of minutes before which the reminder should give alert: ") * 60)
+                                      name: "number of minutes before which the reminder should give alert") * 60)
             if isValidRingTime(ringTime: ringTime, addedTime: addedTime, eventTime: eventTime) {
                 ringTimeList.insert(Double(ringTime))
             } else {
@@ -197,21 +199,19 @@ struct ReminderController {
     /// Creates a `Reminder`
     func add() {
         let reminder = createReminder()
-        if reminderDB.create(element: reminder).1 {
-            Printer.printToConsole("Successfully created reminder database")
+        let response = reminderDB.create(element: reminder)
+        if response.1 {
+            Printer.printToConsole("Successfully created reminder database with ID = \(response.0)")
         } else {
             Printer.printToConsole("Failure in creating database")
         }
     }
-    /// Deletes a `Reminder` with respect to the id from the Database
+    /// Retrieves a `Reminder` for the given id
     ///
-    /// - Parameter remidnerID: The id of the Reminder from database
-    func delete(reminderID: Int) {
-        if reminderDB.delete(id: reminderID) {
-            Printer.printToConsole("Successfully deleted")
-        } else {
-            Printer.printToConsole("Error in deleting Reminder from database")
-        }
+    /// - Parameters:
+    ///     - reminderID: The id of the `Reminder` from Database
+    func get(reminderID: Int) -> Reminder? {
+        return reminderDB.retrieve(id: reminderID)
     }
     /// Updates a `Reminder` for the given id
     ///
@@ -225,5 +225,14 @@ struct ReminderController {
             Printer.printToConsole("Error in updating reminder with id:\(reminderID)")
         }
     }
+    /// Deletes a `Reminder` with respect to the id from the Database
+    ///
+    /// - Parameter remidnerID: The id of the Reminder from database
+    func delete(reminderID: Int) {
+        if reminderDB.delete(id: reminderID) {
+            Printer.printToConsole("Successfully deleted")
+        } else {
+            Printer.printToConsole("Error in deleting Reminder from database")
+        }
+    }
 }
-
