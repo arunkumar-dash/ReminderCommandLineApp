@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 /// Used to get input from user
 struct Input {
     private init() {}

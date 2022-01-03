@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1D6520522782B62E003FCEEA /* NotesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520512782B62E003FCEEA /* NotesController.swift */; };
+		1D6520542782B63E003FCEEA /* Notes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520532782B63E003FCEEA /* Notes.swift */; };
 		1D880797277AE9B700896BD4 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D880796277AE9B700896BD4 /* Player.swift */; };
+		1D8807C6277C3E0A00896BD4 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8807C5277C3E0A00896BD4 /* Notification.swift */; };
 		1D8C83B9276081630061D276 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83B8276081630061D276 /* main.swift */; };
 		1D8C83C02761B6360061D276 /* Reminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83BF2761B6360061D276 /* Reminder.swift */; };
 		1D8C83C2276328E60061D276 /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83C1276328E60061D276 /* Printer.swift */; };
@@ -30,7 +33,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1D6520512782B62E003FCEEA /* NotesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesController.swift; sourceTree = "<group>"; };
+		1D6520532782B63E003FCEEA /* Notes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notes.swift; sourceTree = "<group>"; };
 		1D880796277AE9B700896BD4 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		1D8807C5277C3E0A00896BD4 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		1D8C83B5276081630061D276 /* ReminderCommandLineApp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ReminderCommandLineApp; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D8C83B8276081630061D276 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		1D8C83BF2761B6360061D276 /* Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminder.swift; sourceTree = "<group>"; };
@@ -79,6 +85,9 @@
 				1D8C83BF2761B6360061D276 /* Reminder.swift */,
 				1D8C83C1276328E60061D276 /* Printer.swift */,
 				1D8C83B8276081630061D276 /* main.swift */,
+				1D8807C5277C3E0A00896BD4 /* Notification.swift */,
+				1D6520512782B62E003FCEEA /* NotesController.swift */,
+				1D6520532782B63E003FCEEA /* Notes.swift */,
 			);
 			path = ReminderCommandLineApp;
 			sourceTree = "<group>";
@@ -144,7 +153,10 @@
 				1DBA075227671F280076C4C5 /* Input.swift in Sources */,
 				1D8C83C2276328E60061D276 /* Printer.swift in Sources */,
 				1DBA07502763361B0076C4C5 /* Defaults.swift in Sources */,
+				1D8807C6277C3E0A00896BD4 /* Notification.swift in Sources */,
+				1D6520542782B63E003FCEEA /* Notes.swift in Sources */,
 				1D8C83B9276081630061D276 /* main.swift in Sources */,
+				1D6520522782B62E003FCEEA /* NotesController.swift in Sources */,
 				1D880797277AE9B700896BD4 /* Player.swift in Sources */,
 				1D8C83C02761B6360061D276 /* Reminder.swift in Sources */,
 				1DBA07582768531A0076C4C5 /* Database.swift in Sources */,

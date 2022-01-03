@@ -17,4 +17,12 @@ struct Printer {
     static func printBlankLine() {
         print("")
     }
+    static func printError<PrintingType: StringProtocol>(_ error: PrintingType) {
+        let errorStatement = "    ERROR: " + error
+        Printer.printToConsole(errorStatement)
+    }
+    static func printError<PrintingType: Error>(_ error: PrintingType) {
+        let errorStatement = "    ERROR: " + error.localizedDescription
+        Printer.printToConsole(errorStatement)
+    }
 }

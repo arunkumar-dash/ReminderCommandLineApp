@@ -9,6 +9,14 @@ import Foundation
 
 /// Conforming to this protocol will convert
 protocol Defaults {
+    /// A function which changes the default values from the `Dictionary` passed
+    /// as parameter, by considering `Dictionary.Key` as the property name and
+    /// its value as `Dictionary.Value` as the value of the property.
+    ///
+    /// - Parameter dictionary: A `Dictionary` containing keys as the
+    /// property's name and value as the property's value
+    /// - Returns: A `Bool` value denoting the result of the operation
+    func changeDefaults(dictionary list: [String: Any]) -> Bool
 }
 
 extension Defaults {
@@ -50,20 +58,60 @@ class ReminderDefaults: Defaults {
         /// Default description for Reminder
         description = "Your description goes here..."
         
+        let anHour: TimeInterval = 3600
+        
         /// Default time when the Reminder rings
         /// Default time set here is one hour(3600 seconds) after the time when Reminder was added
-        eventTime = addedTime + 3600
+        eventTime = addedTime + anHour
 
+        let filePath = "/Users/arun-pt4306/Downloads/sound.wav"
+        
         /// Default ringing sound of the Reminder
-        sound = "sound.wav"
+        sound = filePath
         
         /// Pattern when the Reminder repeats
         /// Default pattern is no repetitions
         repeatTiming = .never
         
+        let thirtyMinutes: TimeInterval = 1800
+        
         /// Set of `TimeInterval`s when the Reminder should ring before the `eventTime`
         /// By default the reminder rings 30 minutes before the `eventTime`
-        ringTimeList = Set([1800])
+        ringTimeList = Set([thirtyMinutes])
+    }
+    
+    func changeDefaults(dictionary list: [String : Any]) -> Bool {
+        for (item, value) in list {
+            switch item {
+            case "title":
+                if value is String {
+                    self.title = value as! String
+                } else {
+                    return false
+                }
+            case "description":
+                if value is String {
+                    self.description = value as! String
+                } else {
+                    return false
+                }
+            case "repeatTiming":
+                if value is RepeatPattern {
+                    self.repeatTiming = value as! RepeatPattern
+                } else {
+                    return false
+                }
+            case "ringTimeList":
+                if value is Set<TimeInterval> {
+                    self.ringTimeList = value as! Set<TimeInterval>
+                } else {
+                    return false
+                }
+            default:
+                return false
+            }
+        }
+        return true
     }
     
 }

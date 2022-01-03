@@ -9,10 +9,15 @@ import Foundation
 
 /// Controller for handling operations of a Reminder
 struct ReminderController {
+    
+    enum ReminderError: Error {
+        case invalidEventTime
+    }
     /// Property to handle database operations with Reminder
-    let reminderDB: ReminderDB
+    private let reminderDB: ReminderDB
     init() {
         reminderDB = ReminderDB()
+        NotificationManager.startBackgroundAction()
     }
     /// Returns a Reminder instance
     ///
@@ -24,8 +29,15 @@ struct ReminderController {
     ///     - repeatTiming: The repetitions of the `Reminder`
     ///     - ringTimeList: The `Set` of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
     /// - Returns: A `Reminder` object
-    private func createReminderInstance(addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date?,
-                                sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil) -> Reminder {
+    private func createReminderInstance(
+        addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date?,
+        sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil
+    ) throws -> Reminder {
+        if let eventTime = eventTime {
+            if eventTime < addedTime {
+                throw ReminderError.invalidEventTime
+            }
+        }
         return Reminder(addedTime: addedTime, title: title, description: description, eventTime: eventTime,
                         sound: sound, repeatTiming: repeatTiming, ringTimeList: ringTimeList)
     }
@@ -49,7 +61,9 @@ struct ReminderController {
     ///     - range: The `Range` within which the `Integer` should lie within
     ///     - name: The name of the value which we are obtaining
     /// - Returns: The `Integer` obtained from the User
-    private func getInteger<AnyRange: RangeExpression>(range: AnyRange, name string: String? = nil) -> Int where AnyRange.Bound == Int {
+    private func getInteger<AnyRange: RangeExpression>(
+        range: AnyRange, name string: String? = nil
+    ) -> Int where AnyRange.Bound == Int {
         while true {
             var response: String = ""
             if let inputString = string {
@@ -60,9 +74,9 @@ struct ReminderController {
             if let integer = Int(response), range.contains(integer) {
                 return integer
             } else if let _ = Int(response) {
-                Printer.printToConsole("Input is not in range")
+                Printer.printError("Input is not in range")
             } else {
-                Printer.printToConsole("Input cannot be interpreted as Int")
+                Printer.printError("Input cannot be interpreted as Int")
             }
         }
     }
@@ -146,7 +160,7 @@ struct ReminderController {
             } while Input.getBooleanResponse(string: "Do you want to enter another Week Day?")
             return RepeatPattern.custom(weekDaySet)
         default:
-            Printer.printToConsole("Invalid case")
+            Printer.printError("Invalid case")
         }
         return nil
     }
@@ -158,7 +172,8 @@ struct ReminderController {
     ///     - eventTime: The `Date` when  the `Reminder` is supposed to ring
     /// - Returns: A `Bool` indicating whether the `ringTime` is between `addedTime` and `eventTime`
     private func isValidRingTime(ringTime: TimeInterval, addedTime: Date, eventTime: Date?) -> Bool {
-        let eventTime = eventTime ?? (addedTime + 3600)
+        let anHourInSeconds: TimeInterval = 3600
+        let eventTime = eventTime ?? (addedTime + anHourInSeconds)
         let totalDateInterval = DateInterval(start: addedTime, end: eventTime)
         let totalTimeInterval = eventTime.timeIntervalSince(addedTime)
         return totalDateInterval.contains(Date(timeInterval: totalTimeInterval - ringTime, since: addedTime))
@@ -182,19 +197,37 @@ struct ReminderController {
         } while Input.getBooleanResponse(string: "Do you want to enter another input? ")
         return ringTimeList
     }
+    
+    private func getEventTime(addedTime: Date) -> Date? {
+        while let eventTime = getOptionalDate(name: "Event Time") {
+            if eventTime <= addedTime {
+                Printer.printError("Event Time invalid!")
+            } else {
+                return eventTime
+            }
+        }
+        return nil
+    }
     /// Returns a `Reminder` created from user inputs
     ///
     /// - Returns: A `Reminder` object
     private func createReminder() -> Reminder {
-        let addedTime = Date.now
-        let title = getOptionalValue(name: "Title")
-        let description = getOptionalValue(name: "Description")
-        let eventTime = getOptionalDate(name: "Event Time")
-        let sound = getOptionalValue(name: "Sound")
-        let repeatTiming = getRepeatPattern()
-        let ringTimeList = getRingTimeList(addedTime: addedTime, eventTime: eventTime)
-        return createReminderInstance(addedTime: addedTime, title: title, description: description, eventTime: eventTime,
-                              sound: sound, repeatTiming: repeatTiming, ringTimeList: ringTimeList)
+        while true {
+            do {
+                let addedTime = Date.now
+                let title = getOptionalValue(name: "Title")
+                let description = getOptionalValue(name: "Description")
+                let eventTime = getEventTime(addedTime: addedTime)
+                let sound = getOptionalValue(name: "Sound")
+                let repeatTiming = getRepeatPattern()
+                let ringTimeList = getRingTimeList(addedTime: addedTime, eventTime: eventTime)
+                return try createReminderInstance(addedTime: addedTime, title: title, description: description, eventTime: eventTime, sound: sound, repeatTiming: repeatTiming, ringTimeList: ringTimeList)
+            } catch ReminderError.invalidEventTime {
+                Printer.printError("Invalid date entered(Date should be in 24hr format)")
+            } catch let error {
+                Printer.printError(error)
+            }
+        }
     }
     /// Creates a `Reminder`
     func add() {
@@ -203,7 +236,13 @@ struct ReminderController {
         if response.1 {
             Printer.printToConsole("Successfully created reminder database with ID = \(response.0)")
         } else {
-            Printer.printToConsole("Failure in creating database")
+            Printer.printError("Failure in creating database")
+        }
+        // add to notification
+        do {
+            try NotificationManager.push(reminder: reminder)
+        } catch let error {
+            Printer.printError(error)
         }
     }
     /// Retrieves a `Reminder` for the given id
@@ -219,20 +258,60 @@ struct ReminderController {
     ///     - reminderID: The id of the `Reminder` from Database
     ///     - reminder: The new `Reminder` instance
     func edit(reminderID: Int, reminder: Reminder) {
+        // delete notification of old reminder
+        do {
+            if let reminder = reminderDB.retrieve(id: reminderID) {
+                do {
+                    try NotificationManager.pop(reminder: reminder)
+                } catch NotificationManager.NotificationManagerError.notificationDoesNotExist {
+                    if reminder.eventTime >= Date.now {
+                        throw NotificationManager.NotificationManagerError.notificationDoesNotExist
+                    }
+                }
+            }
+        } catch let error {
+            Printer.printError(error)
+        }
+        // update db
         if reminderDB.update(id: reminderID, element: reminder) {
-            Printer.printToConsole("Successfully updated")
+            Printer.printToConsole("Successfully updated to db")
+            // create notification of new reminder
+            do {
+                try NotificationManager.push(reminder: reminder)
+            } catch let error {
+                Printer.printError("Error while updating reminder notification")
+                Printer.printError(error)
+            }
         } else {
-            Printer.printToConsole("Error in updating reminder with id:\(reminderID)")
+            Printer.printError("Updating reminder db with id:\(reminderID) unsuccessful")
         }
     }
     /// Deletes a `Reminder` with respect to the id from the Database
     ///
     /// - Parameter remidnerID: The id of the Reminder from database
     func delete(reminderID: Int) {
+        // delete notification
+        do {
+            if let reminder = reminderDB.retrieve(id: reminderID) {
+                do {
+                    try NotificationManager.pop(reminder: reminder)
+                } catch NotificationManager.NotificationManagerError.notificationDoesNotExist {
+                    if reminder.eventTime >= Date.now {
+                        throw NotificationManager.NotificationManagerError.notificationDoesNotExist
+                    }
+                }
+            }
+        } catch let error {
+            Printer.printError(error)
+        }
         if reminderDB.delete(id: reminderID) {
             Printer.printToConsole("Successfully deleted")
         } else {
-            Printer.printToConsole("Error in deleting Reminder from database")
+            Printer.printError("Deleting Reminder from database unsuccessful")
         }
+    }
+    
+    func changePreferences() {
+        
     }
 }

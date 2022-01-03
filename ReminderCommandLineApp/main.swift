@@ -9,8 +9,8 @@ import Foundation
 
 print("Hello, World!")
 
-// ADD ASYNCHRONOUS RINGING OF REMINDER
-// ENCODE AND STORE REMINDER OBJECTS AS DATA AND DECODE IT
+// ADD REPEAT PATTERN ALSO IN NOTIFICATIONS.PUSH, NOTIFICATIONS.POP AS A PATTERN(LOGIC), NOT AS INDIVIDUAL INPUTS
+
 
 var controller = ReminderController()
 outerLoop:
@@ -25,7 +25,9 @@ while true {
         let id = readLine()!
         if let integerId = Int(id) {
             if let reminder = controller.get(reminderID: integerId) {
-                print(reminder.title, reminder.description, Player.searchAndPlay(fileName: reminder.sound))
+                print(reminder.title)
+                print(reminder.description)
+                print(Player.searchAndPlay(fileName: reminder.sound))
             } else {
                 print("not found")
             }
@@ -59,3 +61,6 @@ while true {
 //let filePath = Bundle.main.path(forResource: "sound", ofType: "wav", inDirectory: "ReminderCommandLineApp")
 //print(Player.searchAndPlay(fileName: filePath ?? "/Users/arun-pt4306/Downloads/sound.wav"))
 //sleep(2)
+
+
+

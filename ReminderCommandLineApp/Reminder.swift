@@ -51,8 +51,10 @@ protocol ReminderProtocol {
     var sound: String { get }
     /// The frequency to repeat the Reminder
     var repeatTiming: RepeatPattern { get }
-    /// The list of TimeIntervals the reminder should ring before the `eventTime`
-    var ringTimeList: Set<TimeInterval> { get }
+    /// The set of `TimeInterval`s the reminder should ring before the `eventTime`
+    var ringTimeIntervals: Set<TimeInterval> { get }
+    /// The set of `Date`s the reminder should ring before the `eventTime`
+    var ringDates: Set<Date> { get }
     
 //    let reminderView = ReminderView(self)
 }
@@ -72,8 +74,21 @@ struct Reminder: ReminderProtocol, Codable {
     var sound: String
     /// The `RepeatPattern` of the Reminder
     var repeatTiming: RepeatPattern
-    /// The list of `TimeInterval`s before the `eventTime` when the Reminder should ring
-    var ringTimeList: Set<TimeInterval>
+    /// The set of `TimeInterval`s before the `eventTime` when the Reminder should ring
+    var ringTimeIntervals: Set<TimeInterval>
+    /// The set of `Date`s the reminder should ring before the `eventTime`
+    var ringDates: Set<Date> {
+        get {
+            var set = Set<Date>()
+            for timeInterval in ringTimeIntervals {
+                let totalTimeInterval = eventTime.timeIntervalSince(addedTime)
+                let timeIntervalSinceAddedTime = totalTimeInterval - timeInterval
+                let ringTime = Date(timeInterval: timeIntervalSinceAddedTime, since: addedTime)
+                set.insert(ringTime)
+            }
+            return set
+        }
+    }
     
     init(addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date? = nil,
          sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil) {
@@ -84,7 +99,7 @@ struct Reminder: ReminderProtocol, Codable {
         self.eventTime = defaults.setValue(mainValue: eventTime, defaultValue: defaults.eventTime)
         self.sound = defaults.setValue(mainValue: sound, defaultValue: defaults.sound)
         self.repeatTiming = defaults.setValue(mainValue: repeatTiming, defaultValue: defaults.repeatTiming)
-        self.ringTimeList = defaults.setValue(mainValue: ringTimeList, defaultValue: defaults.ringTimeList)
+        self.ringTimeIntervals = defaults.setValue(mainValue: ringTimeList, defaultValue: defaults.ringTimeList)
     }
 }
 // must display reminders in a linkedlist pattern, view as mp3 player showing songs but should be sorted by date... convert to linkedlist when viewed, else maintain as a sorted-by-date list/array. and converting to linkedlist must start from the selected view and asynchronously add links to its left and right(previous and next days)

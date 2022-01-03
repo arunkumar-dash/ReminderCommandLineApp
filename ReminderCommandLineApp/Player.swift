@@ -20,6 +20,7 @@ struct Player {
     static func play(fileUrl url: URL) -> Bool {
         let player = NSSound(contentsOf: url, byReference: true)
         if let player = player {
+            // NSSound.play() is async 
             return player.play()
         } else {
             return false
