@@ -12,11 +12,13 @@ protocol NotesProtocol {
     var title: String { get set }
     
     var description: String { get set }
+    
+    var addedTime: Date { get set }
 }
 
-struct Notes: NotesProtocol {
+struct Notes: NotesProtocol, Codable {
     
-    private var MAX_LENGTH = 20
+    private var MAX_LENGTH = 40
     
     private var _title: String?
     
@@ -33,8 +35,14 @@ struct Notes: NotesProtocol {
     
     var description: String
     
-    init(title: String, description: String) {
-        self.description = description
-        self.title = title
+    var addedTime: Date
+    
+    init(title: String?, description: String?, addedTime: Date?) {
+        self.addedTime = NotesDefaults.setValue(addedTime: addedTime)
+        self.description = NotesDefaults.setValue(description: description)
+        
+        self.title = NotesDefaults.setValue(title: title)
     }
 }
+
+// View

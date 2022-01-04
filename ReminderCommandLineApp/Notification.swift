@@ -30,6 +30,7 @@ extension Date {
 }
 
 class NotificationManager {
+    static var backgroundActionStarted = false
     
     enum NotificationManagerError: Error {
         case pushFailure
@@ -42,8 +43,9 @@ class NotificationManager {
     static func push(notification: NotificationProtocol) throws {
         if notifications[notification.time.toDateWrapper()] != nil {
             throw NotificationManagerError.notificationAlreadyExists
+        } else if notification.time > Date.now {
+            notifications[notification.time.toDateWrapper()] = notification
         }
-        notifications[notification.time.toDateWrapper()] = notification
     }
     
     static func pop(notification: NotificationProtocol) throws {
@@ -88,6 +90,25 @@ class NotificationManager {
         Printer.printLine()
         Printer.printToConsole(notification.body)
         Printer.printLine()
+        Printer.printToConsole("Select options:")
+        for (optionNumber, option) in NotificationOption.allCases.enumerated() {
+            Printer.printToConsole("[\(optionNumber)] \(option)")
+        }
+        let optionNumberInput = Input.getInteger(range: 1...NotificationOption.allCases.count, name: "option number")
+        var notificationOption: NotificationOption? = nil
+        for (optionNumber, option) in NotificationOption.allCases.enumerated() {
+            if optionNumber == optionNumberInput {
+                notificationOption = option
+                break
+            }
+        }
+        if let notificationOption = notificationOption {
+            if notificationOption == .snooze {
+                let snoozedTime = Date.now + NotificationDefaults.snoozeTime
+                notifications[snoozedTime.toDateWrapper()] = notification
+            }
+        }
+        Printer.printLine()
         Printer.printLine()
         do {
             try NotificationManager.pop(notification: notification)
@@ -99,6 +120,10 @@ class NotificationManager {
     }
     
     static func startBackgroundAction() {
+        if backgroundActionStarted {
+            return
+        }
+        backgroundActionStarted = true
         
         DispatchQueue.global().async {
             while true {
@@ -113,12 +138,28 @@ class NotificationManager {
     }
 }
 
+enum NotificationOption: CaseIterable {
+    case markAsDone
+    case snooze
+}
+
 protocol NotificationProtocol {
     var title: String { get set }
     var subtitle: String { get set }
     var body: String { get set }
     var sound: String { get set }
     var time: Date { get set }
+    var options: Set<NotificationOption> { get set }
+}
+
+extension NotificationProtocol {
+    // adding default implementation as the property can be implemented optionally
+    var options: Set<NotificationOption> {
+        get {
+            return Set<NotificationOption>([.markAsDone, .snooze])
+        }
+        set {}
+    }
 }
 
 struct ReminderNotification: NotificationProtocol {
