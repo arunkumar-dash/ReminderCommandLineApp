@@ -166,30 +166,7 @@ struct Input {
     static func getRepeatPattern() -> RepeatPattern {
         while true {
             Printer.printToConsole("Enter Repeat pattern:")
-            Printer.printToConsole("[1]\(RepeatPattern.never)")
-            Printer.printToConsole("[2]\(RepeatPattern.everyWeek)")
-            Printer.printToConsole("[3]\(RepeatPattern.everyMonth)")
-            Printer.printToConsole("[4]\(RepeatPattern.everyYear)")
-            Printer.printToConsole("[5] Custom")
-            switch (getInteger(range: 1...5)) {
-            case 1:
-                return RepeatPattern.never
-            case 2:
-                return RepeatPattern.everyWeek
-            case 3:
-                return RepeatPattern.everyMonth
-            case 4:
-                return RepeatPattern.everyYear
-            case 5:
-                var weekDaySet: Set<WeekDay> = []
-                repeat {
-                    let day = Input.getEnumResponse(type: WeekDay.self)
-                    weekDaySet.insert(day)
-                } while Input.getBooleanResponse(string: "Do you want to enter another Week Day?")
-                return RepeatPattern.custom(weekDaySet)
-            default:
-                Printer.printError("Invalid case")
-            }
+            return getEnumResponse(type: RepeatPattern.self)
         }
     }
     /// Returns a `Bool` indicating whether the `ringTime` passed in argument lies between `addedTime` and `eventTime`

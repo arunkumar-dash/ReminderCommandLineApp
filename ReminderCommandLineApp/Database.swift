@@ -13,18 +13,19 @@ protocol Database {
     // Object is optional assuming the connection made to database can fail and the object can be nil
     static var databaseArray: Array<Data?>? { get set }
     static var idGenerator: ElementID { get set }
+    static var name: String { get set }
     
     
     associatedtype ElementID: Comparable
     associatedtype ElementObject: Codable
     /// Creates an entry in the database and returns the generated ID and the result of the operation(Sucess/ Failure)
-    func create(element: ElementObject) -> (ElementID, Bool)
+    static func create(element: ElementObject) -> (ElementID, Bool)
     /// Returns the element present at that id
-    func retrieve(id: ElementID) async -> ElementObject?
+    static func retrieve(id: ElementID) async -> ElementObject?
     /// Updates the database with the given ID
-    func update(id: ElementID, element: ElementObject) async -> Bool
+    static func update(id: ElementID, element: ElementObject) async -> Bool
     /// Deletes the element present at that id
-    func delete(id: ElementID) async -> Bool
+    static func delete(id: ElementID) async -> Bool
 }
 
 enum EncodingFormat {
@@ -86,17 +87,16 @@ extension Data {
 
 extension Database where ElementID == Int {
     // Connect db
-    func connect(tablename: String) -> Bool {
+    static func connect() -> Bool {
         if let _ = Self.databaseArray {
             return true
         }
         Self.databaseArray = []
         // return false if any error in connnection
-        Printer.printToConsole("\(tablename) created!")
         return true
     }
     // Creates entry in table
-    func create(element: ElementObject) -> (ElementID, Bool) {
+    static func create(element: ElementObject) -> (ElementID, Bool) {
         // create a row in table and return success/failure, along with generated row's id
         var success: Bool
         if Self.databaseArray != nil {
@@ -112,14 +112,18 @@ extension Database where ElementID == Int {
         }
         return (Self.idGenerator, success)
     }
-    func retrieve(id: ElementID) -> ElementObject? {
+    static func retrieve(id: ElementID) -> ElementObject? {
         // retrieve a row from table if found, else return nil
         if Self.databaseArray != nil {
             if Self.databaseArray!.count >= id {
                 do {
-                    let object = try Self.databaseArray![id - 1]!.decode(ElementObject.self, format: .json)
-                    sleep(1)
-                    return object
+                    if let data = Self.databaseArray![id - 1] {
+                        let object = try data.decode(ElementObject.self, format: .json)
+                        sleep(1)
+                        return object
+                    } else {
+                        return nil
+                    }
                 } catch let error {
                     Printer.printError(error)
                     return nil
@@ -133,7 +137,7 @@ extension Database where ElementID == Int {
             return nil
         }
     }
-    func update(id: ElementID, element: ElementObject) -> Bool {
+    static func update(id: ElementID, element: ElementObject) -> Bool {
         // update a row in table and return success/failure
         var success: Bool
         if Self.databaseArray != nil {
@@ -158,7 +162,7 @@ extension Database where ElementID == Int {
         return success
     }
     // Deletes entry in table
-    func delete(id: ElementID) -> Bool {
+    static func delete(id: ElementID) -> Bool {
         // delete a row in table and return success/failure
         var success: Bool
         if Self.databaseArray != nil {
@@ -185,6 +189,8 @@ class ReminderDB: Database {
     // Object is optional assuming the connection made to database can fail and the object can be nil
     static var databaseArray: Array<Data?>? = nil
     static var idGenerator = 0
+    
+    static var name: String = "Reminder"
 }
 
 class NotesDB: Database {
@@ -194,4 +200,6 @@ class NotesDB: Database {
     
     static var databaseArray: Array<Data?>? = nil
     static var idGenerator = 0
+    
+    static var name: String = "Notes"
 }

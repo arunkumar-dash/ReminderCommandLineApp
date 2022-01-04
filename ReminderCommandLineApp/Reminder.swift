@@ -20,7 +20,7 @@ enum WeekDay: CaseIterable, Codable {
 }
 
 /// Pattern to repeat the `Reminder`
-enum RepeatPattern: Codable {
+enum RepeatPattern: CaseIterable, Codable {
     /// Repeats every day
     case everyDay
     /// Repeats every week
@@ -31,8 +31,6 @@ enum RepeatPattern: Codable {
     case everyYear
     /// Repeats never
     case never
-    /// Repeats every `WeekDay` in the `Set`
-    case custom(Set<WeekDay>)
 }
 
 /// Types that conform to `ReminderProtocol` are Reminders
@@ -55,6 +53,8 @@ protocol ReminderProtocol {
     var ringTimeIntervals: Set<TimeInterval> { get }
     /// The set of `Date`s the reminder should ring before the `eventTime`
     var ringDates: Set<Date> { get }
+    // creating this property for notification syncing purpose
+    var id: Int? { get }
     
 //    let reminderView = ReminderView(self)
 }
@@ -79,7 +79,7 @@ struct Reminder: ReminderProtocol, Codable {
     /// The set of `Date`s the reminder should ring before the `eventTime`
     var ringDates: Set<Date> {
         get {
-            var set = Set<Date>()
+            var set = Set<Date>([eventTime])
             for timeInterval in ringTimeIntervals {
                 let totalTimeInterval = eventTime.timeIntervalSince(addedTime)
                 let timeIntervalSinceAddedTime = totalTimeInterval - timeInterval
@@ -89,6 +89,8 @@ struct Reminder: ReminderProtocol, Codable {
             return set
         }
     }
+    // creating this property for notification syncing purpose
+    var id: Int? = nil
     
     init(addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date? = nil,
          sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil) {

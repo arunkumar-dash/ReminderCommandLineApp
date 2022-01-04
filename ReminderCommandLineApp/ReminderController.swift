@@ -13,11 +13,6 @@ struct ReminderController {
     enum ReminderError: Error {
         case invalidEventTime
     }
-    /// Property to handle database operations with Reminder
-    private let reminderDB: ReminderDB
-    init() {
-        reminderDB = ReminderDB()
-    }
     /// Returns a Reminder instance
     ///
     /// - Parameters:
@@ -64,16 +59,17 @@ struct ReminderController {
     }
     /// Creates a `Reminder`
     func add() {
-        if reminderDB.connect(tablename: "Reminder") {
+        if ReminderDB.connect() {
             Printer.printToConsole("Successfully created reminder database")
         } else {
             Printer.printError("Failure in creating reminder database")
             return
         }
-        let reminder = createReminder()
-        let response = reminderDB.create(element: reminder)
+        var reminder = createReminder()
+        let response = ReminderDB.create(element: reminder)
         if response.1 {
             Printer.printToConsole("Successfully created entry in reminder database with ID = \(response.0)")
+            reminder.id = response.0
         } else {
             Printer.printError("Failure in creating database entry")
         }
@@ -89,7 +85,7 @@ struct ReminderController {
     /// - Parameters:
     ///     - reminderID: The id of the `Reminder` from Database
     func get(reminderID: Int) -> Reminder? {
-        return reminderDB.retrieve(id: reminderID)
+        return ReminderDB.retrieve(id: reminderID)
     }
     /// Updates a `Reminder` for the given id
     ///
@@ -99,7 +95,7 @@ struct ReminderController {
     func edit(reminderID: Int, reminder: Reminder) {
         // delete notification of old reminder
         do {
-            if let reminder = reminderDB.retrieve(id: reminderID) {
+            if let reminder = ReminderDB.retrieve(id: reminderID) {
                 do {
                     try NotificationManager.pop(reminder: reminder)
                 } catch NotificationManager.NotificationManagerError.notificationDoesNotExist {
@@ -112,7 +108,7 @@ struct ReminderController {
             Printer.printError(error)
         }
         // update db
-        if reminderDB.update(id: reminderID, element: reminder) {
+        if ReminderDB.update(id: reminderID, element: reminder) {
             Printer.printToConsole("Successfully updated to db")
             // create notification of new reminder
             do {
@@ -131,7 +127,7 @@ struct ReminderController {
     func delete(reminderID: Int) {
         // delete notification
         do {
-            if let reminder = reminderDB.retrieve(id: reminderID) {
+            if let reminder = ReminderDB.retrieve(id: reminderID) {
                 do {
                     try NotificationManager.pop(reminder: reminder)
                 } catch NotificationManager.NotificationManagerError.notificationDoesNotExist {
@@ -143,7 +139,7 @@ struct ReminderController {
         } catch let error {
             Printer.printError(error)
         }
-        if reminderDB.delete(id: reminderID) {
+        if ReminderDB.delete(id: reminderID) {
             Printer.printToConsole("Successfully deleted")
         } else {
             Printer.printError("Deleting Reminder from database unsuccessful")

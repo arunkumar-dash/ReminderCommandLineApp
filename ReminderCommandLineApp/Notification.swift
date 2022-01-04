@@ -58,29 +58,57 @@ class NotificationManager {
     
     static func push(reminder: ReminderProtocol) throws {
         for date in reminder.ringDates {
-            let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date)
-            try NotificationManager.push(notification: reminderNotification)
+            if let id = reminder.id {
+                let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date, id: id)
+                try NotificationManager.push(notification: reminderNotification)
+            }
         }
-        let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: reminder.eventTime)
-        try NotificationManager.push(notification: reminderNotification)
     }
     
     static func pop(reminder: ReminderProtocol) throws {
-        for date in reminder.ringDates {
-            let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date)
-            try NotificationManager.pop(notification: reminderNotification)
-        }
-        let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: reminder.eventTime)
         do {
-            try NotificationManager.pop(notification: reminderNotification)
+            for date in reminder.ringDates {
+                if let id = reminder.id {
+                    let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date, id: id)
+                    try NotificationManager.pop(notification: reminderNotification)
+                }
+            }
         } catch NotificationManagerError.notificationDoesNotExist {
             Printer.printError("Notification wasn't added to the Notifications directory earlier")
         }
     }
+    // function to add next notification for the repeat pattern in the reminder
+    static private func addNextReminderNotification(unit: Calendar.Component, count: Int, notification: ReminderNotification) {
+        if let date = Calendar.current.date(byAdding: unit, value: count, to: Date.now) {
+            notifications[date.toDateWrapper()] = notification
+        } else {
+            Printer.printError("Unable to add \(unit) to current date for next repeated reminder notification")
+        }
+    }
     
     static private func notify(notification: NotificationProtocol) -> Bool {
-        
         var success = true
+        
+        if let notification = notification as? ReminderNotification {
+            if let reminder = ReminderDB.retrieve(id: notification.id) {
+                switch reminder.repeatTiming {
+                case .everyDay:
+                    addNextReminderNotification(unit: .day, count: 1, notification: notification)
+                case .everyWeek:
+                    addNextReminderNotification(unit: .day, count: 7, notification: notification)
+                case .everyMonth:
+                    addNextReminderNotification(unit: .month, count: 1, notification: notification)
+                case .everyYear:
+                    addNextReminderNotification(unit: .year, count: 1, notification: notification)
+                default:
+                    break
+                }
+            } else {
+                // Reminder instance not available in db
+                return success
+            }
+        }
+        
         success = success && Player.searchAndPlay(fileName: notification.sound)
         Printer.printLine()
         Printer.printLine()
@@ -91,22 +119,10 @@ class NotificationManager {
         Printer.printToConsole(notification.body)
         Printer.printLine()
         Printer.printToConsole("Select options:")
-        for (optionNumber, option) in NotificationOption.allCases.enumerated() {
-            Printer.printToConsole("[\(optionNumber)] \(option)")
-        }
-        let optionNumberInput = Input.getInteger(range: 1...NotificationOption.allCases.count, name: "option number")
-        var notificationOption: NotificationOption? = nil
-        for (optionNumber, option) in NotificationOption.allCases.enumerated() {
-            if optionNumber == optionNumberInput {
-                notificationOption = option
-                break
-            }
-        }
-        if let notificationOption = notificationOption {
-            if notificationOption == .snooze {
-                let snoozedTime = Date.now + NotificationDefaults.snoozeTime
-                notifications[snoozedTime.toDateWrapper()] = notification
-            }
+        let notificationOption: NotificationOption = Input.getEnumResponse(type: NotificationOption.self)
+        if notificationOption == .snooze {
+            let snoozedTime = Date.now + NotificationDefaults.snoozeTime
+            notifications[snoozedTime.toDateWrapper()] = notification
         }
         Printer.printLine()
         Printer.printLine()
@@ -116,6 +132,7 @@ class NotificationManager {
             Printer.printError("Error in deleting notification after notifying")
             Printer.printError(error)
         }
+        
         return success
     }
     
@@ -168,4 +185,5 @@ struct ReminderNotification: NotificationProtocol {
     var body: String
     var sound: String
     var time: Date
+    var id: Int
 }

@@ -9,14 +9,6 @@ import Foundation
 
 struct NotesController {
     
-    enum NotesError: Error {
-    }
-    
-    private let notesDB: NotesDB
-    init() {
-        notesDB = NotesDB()
-    }
-    
     private func createNotesInstance(
         title: String? = nil, description: String? = nil, addedTime: Date?
     ) -> Notes {
@@ -33,14 +25,14 @@ struct NotesController {
     }
     
     func add() {
-        if notesDB.connect(tablename: "Notes") {
+        if NotesDB.connect() {
             Printer.printToConsole("Successfully created notes database")
         } else {
             Printer.printError("Failure in creating notes database")
             return
         }
         let notes = createNotes()
-        let response = notesDB.create(element: notes)
+        let response = NotesDB.create(element: notes)
         if response.1 {
             Printer.printToConsole("Successfully created entry in notes database with ID = \(response.0)")
         } else {
@@ -49,11 +41,11 @@ struct NotesController {
     }
     
     func get(notesID: Int) -> Notes? {
-        return notesDB.retrieve(id: notesID)
+        return NotesDB.retrieve(id: notesID)
     }
     
     func edit(notesID: Int, notes: Notes) {
-        if notesDB.update(id: notesID, element: notes) {
+        if NotesDB.update(id: notesID, element: notes) {
             Printer.printToConsole("Successfully updated to db")
         } else {
             Printer.printError("Updating notes db with id:\(notesID) unsuccessful")
@@ -61,7 +53,7 @@ struct NotesController {
     }
     
     func delete(notesID: Int) {
-        if notesDB.delete(id: notesID) {
+        if NotesDB.delete(id: notesID) {
             Printer.printToConsole("Successfully deleted")
         } else {
             Printer.printError("Deleting Reminder from database unsuccessful")
