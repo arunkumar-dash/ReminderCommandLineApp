@@ -93,14 +93,14 @@ struct Reminder: ReminderProtocol, Codable {
     var id: Int? = nil
     
     init(addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date? = nil,
-         sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil) {
+         sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeIntervals: Set<TimeInterval>? = nil) {
         self.addedTime = addedTime
-        self.title = ReminderDefaults.setValue(mainValue: title, defaultValue: ReminderDefaults.title)
-        self.description = ReminderDefaults.setValue(mainValue: description, defaultValue: ReminderDefaults.description)
-        self.eventTime = ReminderDefaults.setValue(mainValue: eventTime, defaultValue: ReminderDefaults.eventTime)
-        self.sound = ReminderDefaults.setValue(mainValue: sound, defaultValue: ReminderDefaults.sound)
-        self.repeatTiming = ReminderDefaults.setValue(mainValue: repeatTiming, defaultValue: ReminderDefaults.repeatTiming)
-        self.ringTimeIntervals = ReminderDefaults.setValue(mainValue: ringTimeList, defaultValue: ReminderDefaults.ringTimeList)
+        self.title = ReminderDefaults.setValue(title: title)
+        self.description = ReminderDefaults.setValue(description: description)
+        self.eventTime = ReminderDefaults.setValue(eventTime: eventTime)
+        self.sound = ReminderDefaults.setValue(sound: sound)
+        self.repeatTiming = ReminderDefaults.setValue(repeatTiming: repeatTiming)
+        self.ringTimeIntervals = ReminderDefaults.setValue(ringTimeIntervals: ringTimeIntervals)
     }
 }
 // must display reminders in a linkedlist pattern, view as mp3 player showing songs but should be sorted by date... convert to linkedlist when viewed, else maintain as a sorted-by-date list/array. and converting to linkedlist must start from the selected view and asynchronously add links to its left and right(previous and next days)

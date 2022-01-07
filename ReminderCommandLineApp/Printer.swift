@@ -18,11 +18,11 @@ struct Printer {
         print("")
     }
     static func printError<PrintingType: StringProtocol>(_ error: PrintingType) {
-        let errorStatement = "    ERROR: " + error
+        let errorStatement = "\tERROR: " + error
         Printer.printToConsole(errorStatement)
     }
     static func printError<PrintingType: Error>(_ error: PrintingType) {
-        let errorStatement = "    ERROR: " + error.localizedDescription
+        let errorStatement = "\tERROR: " + error.localizedDescription
         Printer.printToConsole(errorStatement)
     }
 }

@@ -41,11 +41,11 @@ struct NotesController {
     }
     
     func get(notesID: Int) -> Notes? {
-        return NotesDB.retrieve(id: notesID)
+        return NotesDB.retrieve(id: Int32(notesID))
     }
     
     func edit(notesID: Int, notes: Notes) {
-        if NotesDB.update(id: notesID, element: notes) {
+        if NotesDB.update(id: Int32(notesID), element: notes) {
             Printer.printToConsole("Successfully updated to db")
         } else {
             Printer.printError("Updating notes db with id:\(notesID) unsuccessful")
@@ -53,7 +53,7 @@ struct NotesController {
     }
     
     func delete(notesID: Int) {
-        if NotesDB.delete(id: notesID) {
+        if NotesDB.delete(id: Int32(notesID)) {
             Printer.printToConsole("Successfully deleted")
         } else {
             Printer.printError("Deleting Reminder from database unsuccessful")

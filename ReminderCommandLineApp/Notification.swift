@@ -86,11 +86,20 @@ class NotificationManager {
         }
     }
     
+    static private func remove(notification: NotificationProtocol) {
+        do {
+            try NotificationManager.pop(notification: notification)
+        } catch let error {
+            Printer.printError("Error in deleting notification after notifying")
+            Printer.printError(error)
+        }
+    }
+    
     static private func notify(notification: NotificationProtocol) -> Bool {
         var success = true
         
         if let notification = notification as? ReminderNotification {
-            if let reminder = ReminderDB.retrieve(id: notification.id) {
+            if let reminder = ReminderDB.retrieve(id: Int32(notification.id)) {
                 switch reminder.repeatTiming {
                 case .everyDay:
                     addNextReminderNotification(unit: .day, count: 1, notification: notification)
@@ -105,11 +114,12 @@ class NotificationManager {
                 }
             } else {
                 // Reminder instance not available in db
+                remove(notification: notification)
                 return success
             }
         }
         
-        success = success && Player.searchAndPlay(fileName: notification.sound)
+        success = success && Player.searchAndPlayAudio(fileName: notification.sound)
         Printer.printLine()
         Printer.printLine()
         Printer.printToConsole(notification.title)
@@ -117,6 +127,7 @@ class NotificationManager {
         Printer.printToConsole(notification.subtitle)
         Printer.printLine()
         Printer.printToConsole(notification.body)
+        
         Printer.printLine()
         Printer.printToConsole("Select options:")
         let notificationOption: NotificationOption = Input.getEnumResponse(type: NotificationOption.self)
@@ -125,14 +136,9 @@ class NotificationManager {
             notifications[snoozedTime.toDateWrapper()] = notification
         }
         Printer.printLine()
-        Printer.printLine()
-        do {
-            try NotificationManager.pop(notification: notification)
-        } catch let error {
-            Printer.printError("Error in deleting notification after notifying")
-            Printer.printError(error)
-        }
         
+        Printer.printLine()
+        remove(notification: notification)
         return success
     }
     

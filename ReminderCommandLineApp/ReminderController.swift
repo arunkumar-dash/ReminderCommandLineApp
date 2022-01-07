@@ -21,11 +21,11 @@ struct ReminderController {
     ///     - eventTime: The time when the `Reminder` should ring
     ///     - sound: The sound which the `Reminder` should ring
     ///     - repeatTiming: The repetitions of the `Reminder`
-    ///     - ringTimeList: The `Set` of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
+    ///     - ringTimeIntervals: The `Set` of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
     /// - Returns: A `Reminder` object
     private func createReminderInstance(
         addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date?,
-        sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeList: Set<TimeInterval>? = nil
+        sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeIntervals: Set<TimeInterval>? = nil
     ) throws -> Reminder {
         if let eventTime = eventTime {
             if eventTime < addedTime {
@@ -33,7 +33,7 @@ struct ReminderController {
             }
         }
         return Reminder(addedTime: addedTime, title: title, description: description, eventTime: eventTime,
-                        sound: sound, repeatTiming: repeatTiming, ringTimeList: ringTimeList)
+                        sound: sound, repeatTiming: repeatTiming, ringTimeIntervals: ringTimeIntervals)
     }
     /// Returns a `Reminder` created from user inputs
     ///
@@ -48,8 +48,8 @@ struct ReminderController {
                 let sound = Input.getOptionalValue(name: "Sound", for:
                                                     "Reminder")
                 let repeatTiming = Input.getRepeatPattern()
-                let ringTimeList = Input.getRingTimeList(addedTime: addedTime, eventTime: eventTime)
-                return try createReminderInstance(addedTime: addedTime, title: title, description: description, eventTime: eventTime, sound: sound, repeatTiming: repeatTiming, ringTimeList: ringTimeList)
+                let ringTimeIntervals = Input.getRingTimeIntervals(addedTime: addedTime, eventTime: eventTime)
+                return try createReminderInstance(addedTime: addedTime, title: title, description: description, eventTime: eventTime, sound: sound, repeatTiming: repeatTiming, ringTimeIntervals: ringTimeIntervals)
             } catch ReminderError.invalidEventTime {
                 Printer.printError("Invalid date entered(Date should be in 24hr format)")
             } catch let error {
@@ -69,7 +69,7 @@ struct ReminderController {
         let response = ReminderDB.create(element: reminder)
         if response.1 {
             Printer.printToConsole("Successfully created entry in reminder database with ID = \(response.0)")
-            reminder.id = response.0
+            reminder.id = Int(response.0)
         } else {
             Printer.printError("Failure in creating database entry")
         }
@@ -84,7 +84,7 @@ struct ReminderController {
     ///
     /// - Parameters:
     ///     - reminderID: The id of the `Reminder` from Database
-    func get(reminderID: Int) -> Reminder? {
+    func get(reminderID: Int32) -> Reminder? {
         return ReminderDB.retrieve(id: reminderID)
     }
     /// Updates a `Reminder` for the given id
@@ -92,7 +92,7 @@ struct ReminderController {
     /// - Parameters:
     ///     - reminderID: The id of the `Reminder` from Database
     ///     - reminder: The new `Reminder` instance
-    func edit(reminderID: Int, reminder: Reminder) {
+    func edit(reminderID: Int32, reminder: Reminder) {
         // delete notification of old reminder
         do {
             if let reminder = ReminderDB.retrieve(id: reminderID) {
@@ -124,7 +124,7 @@ struct ReminderController {
     /// Deletes a `Reminder` with respect to the id from the Database
     ///
     /// - Parameter remidnerID: The id of the Reminder from database
-    func delete(reminderID: Int) {
+    func delete(reminderID: Int32) {
         // delete notification
         do {
             if let reminder = ReminderDB.retrieve(id: reminderID) {
@@ -149,7 +149,7 @@ struct ReminderController {
     func changePreferences() {
     outerLoop:
         while true {
-            Printer.printToConsole("Select: \n1. Set default title(\(ReminderDefaults.title)) \n2. Set default description(\(ReminderDefaults.description)) \n3. Set default repeatTimings(\(ReminderDefaults.repeatTiming)) \n4. Set default ringTimeList(\(ReminderDefaults.ringTimeList)) \n5. Exit \n")
+            Printer.printToConsole("Select: \n1. Set default title(\(ReminderDefaults.title)) \n2. Set default description(\(ReminderDefaults.description)) \n3. Set default repeatTimings(\(ReminderDefaults.repeatTiming)) \n4. Set default ringTimeIntervals(\(ReminderDefaults.ringTimeIntervals)) \n5. Set default snooze time(\(NotificationDefaults.snoozeTime)) \n6. Exit \n")
             let integerInput = Input.getInteger(range: 1...5)
             switch integerInput {
             case 1:
@@ -163,9 +163,14 @@ struct ReminderController {
                 let repeatTiming: RepeatPattern = Input.getRepeatPattern()
                 ReminderDefaults.setDefault(repeatTiming: repeatTiming)
             case 4:
-                let ringTimeList = Input.getRingTimeList(addedTime: Date.distantFuture)
-                ReminderDefaults.setDefault(ringTimeList: ringTimeList)
+                let ringTimeIntervals = Input.getRingTimeIntervals(addedTime: Date.distantFuture)
+                ReminderDefaults.setDefault(ringTimeIntervals: ringTimeIntervals)
             case 5:
+                let response = Input.getBooleanResponse(string: "if change snooze time to 5 minutes")
+                if response {
+                    NotificationDefaults.snoozeTime = Constant.fiveMinutes
+                }
+            case 6:
                 break outerLoop
             default:
                 Printer.printError("Invalid input")

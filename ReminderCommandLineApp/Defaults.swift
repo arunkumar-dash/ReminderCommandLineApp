@@ -19,14 +19,11 @@ extension Defaults {
     ///     - mainvalue: The mainValue which is considered if it is not nil
     ///     - defaultValue: The value which should be considered if the `mainValue` is nil
     static func setValue<Element>(mainValue: Element?, defaultValue: Element) -> Element {
-        if let mainValue = mainValue {
-            return mainValue
-        }
-        else {
-            return defaultValue
-        }
+        return mainValue ?? defaultValue
     }
 }
+
+
 
 /// Returns the default values of the `Reminder` parameters
 class ReminderDefaults: Defaults {
@@ -42,11 +39,11 @@ class ReminderDefaults: Defaults {
     /// Default time when the Reminder rings
     /// Default time set here is one hour(3600 seconds) after the time when Reminder was added
     static var eventTime: Date {
-        Self.currentDate + Double(3600)
+        Self.currentDate + Constant.oneHour
     }
     
     /// Default ringing sound of the Reminder
-    static var sound = "/Users/arun-pt4306/Downloads/sound.wav"
+    static var sound = Constant.SOUND_PATH
     
     /// Pattern when the Reminder repeats
     /// Default pattern is no repetitions
@@ -54,7 +51,7 @@ class ReminderDefaults: Defaults {
     
     /// Set of `TimeInterval`s when the Reminder should ring before the `eventTime`
     /// By default the reminder rings 30 minutes before the `eventTime`
-    static var ringTimeList = Set([Double(1800)])
+    static var ringTimeIntervals = Set([Constant.halfHour])
 //    let reminderView = ReminderView(self)
     
     static func setDefault(title: String) {
@@ -69,10 +66,33 @@ class ReminderDefaults: Defaults {
         Self.repeatTiming = repeatTiming
     }
     
-    static func setDefault(ringTimeList: Set<TimeInterval>) {
-        Self.ringTimeList = ringTimeList
+    static func setDefault(ringTimeIntervals: Set<TimeInterval>) {
+        Self.ringTimeIntervals = ringTimeIntervals
     }
     
+    static func setValue(title: String?) -> String {
+        return title ?? Self.title
+    }
+    
+    static func setValue(description: String?) -> String {
+        return description ?? Self.description
+    }
+    
+    static func setValue(eventTime: Date?) -> Date {
+        return eventTime ?? Self.eventTime
+    }
+    
+    static func setValue(sound: String?) -> String {
+        return sound ?? Self.sound
+    }
+    
+    static func setValue(repeatTiming: RepeatPattern?) -> RepeatPattern {
+        return repeatTiming ?? Self.repeatTiming
+    }
+    
+    static func setValue(ringTimeIntervals: Set<TimeInterval>?) -> Set<TimeInterval> {
+        return ringTimeIntervals ?? Self.ringTimeIntervals
+    }
 }
 
 class NotesDefaults: Defaults {
@@ -118,7 +138,7 @@ class NotesDefaults: Defaults {
 
 class NotificationDefaults: Defaults {
     // snooze 10 minutes
-    static var snoozeTime: TimeInterval = Double(600)
+    static var snoozeTime: TimeInterval = Constant.tenMinutes
     
     static func setDefault(snoozeTime: TimeInterval) {
         Self.snoozeTime = snoozeTime

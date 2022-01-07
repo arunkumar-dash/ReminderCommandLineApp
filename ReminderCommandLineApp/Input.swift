@@ -138,7 +138,8 @@ struct Input {
         guard Input.getBooleanResponse(string: "Date") else {
             return nil
         }
-        let year = getInteger(range: 1970...2199, name: "year")
+        let yearRange = 1970...2199
+        let year = getInteger(range: yearRange, name: "year")
         let month = getInteger(range: 1...12, name: "month")
         /// An `Array` containing of months which have 31 days
         let monthsWith31Days = [1, 3, 5, 7, 8, 10, 12]
@@ -189,18 +190,18 @@ struct Input {
     ///     - addedTime: The `Date` when the `Reminder` was added
     ///     - eventTime: The `Date` when the `Reminder` should ring
     /// - Returns: A `Set`  of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
-    static func getRingTimeList(addedTime: Date, eventTime: Date? = nil) -> Set<TimeInterval> {
-        var ringTimeList: Set<TimeInterval> = []
+    static func getRingTimeIntervals(addedTime: Date, eventTime: Date? = nil) -> Set<TimeInterval> {
+        var ringTimeIntervals: Set<TimeInterval> = []
         repeat {
-            let ringTime = TimeInterval(getInteger(range: 1...,
-                                      name: "number of minutes before which the reminder should give alert") * 60)
+            let secondsInAMinute = 60
+            let ringTime = TimeInterval(getInteger(range: 1..., name: "number of minutes before which the reminder should give alert") * secondsInAMinute)
             if isValidRingTime(ringTime: ringTime, addedTime: addedTime, eventTime: eventTime) {
-                ringTimeList.insert(Double(ringTime))
+                ringTimeIntervals.insert(Double(ringTime))
             } else {
                 Printer.printToConsole("Invalid input(Input doesn't lie within the range Time.now < input < eventTime")
             }
         } while Input.getBooleanResponse(string: "Do you want to enter another input? ")
-        return ringTimeList
+        return ringTimeIntervals
     }
     
     static func getEventTime(addedTime: Date) -> Date? {
