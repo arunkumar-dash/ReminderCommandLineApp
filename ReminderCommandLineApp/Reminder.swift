@@ -103,7 +103,7 @@ struct Reminder: ReminderProtocol, Codable {
         self.ringTimeIntervals = ReminderDefaults.setValue(ringTimeIntervals: ringTimeIntervals)
     }
 }
-// must display reminders in a linkedlist pattern, view as mp3 player showing songs but should be sorted by date... convert to linkedlist when viewed, else maintain as a sorted-by-date list/array. and converting to linkedlist must start from the selected view and asynchronously add links to its left and right(previous and next days)
+
 protocol ReminderViewProtocol {
     func dayView()
     func monthView()

@@ -8,32 +8,42 @@
 import Foundation
 import SQLite3
 
+/// Errors to handle SQLite3 error codes
 enum SQLiteError: Error {
     case connectionError(message: String)
     case preparationError(message: String)
     case stepError(message: String)
     case bindError(message: String)
 }
-
+/// A wrapper over the SQLite3 framework
 class SQLite {
+    /// The C pointer which is used to perform all database operations
     private let dbPointer: OpaquePointer?
     private static let noErrorMessage = "No error message provided from sqlite."
+    /// Initialiser is private because the user should instantiate only using static functions
     private init(dbPointer: OpaquePointer?) {
         self.dbPointer = dbPointer
     }
     deinit {
+        /// Clearing the memory referenced by the pointer to avoid memory leaks
         sqlite3_close(dbPointer)
     }
+    /// Connects the database to the file with extension .sqlite and returns an SQLite instance
+    /// - Parameter path: The absolute path of the file with .sqlite extension
+    /// - Returns: An SQLite instance initiated with the database
     static func connect(path: String) throws -> SQLite {
         var db: OpaquePointer?
+        /// Opening the connection to database, `SQLITE_OK` is a success code
         if sqlite3_open(path, &db) == SQLITE_OK {
             return SQLite(dbPointer: db)
         } else {
             defer {
                 if db != nil {
+                    /// Closing the database incase of failure
                     sqlite3_close(db)
                 }
             }
+            /// Handling errors
             if let errorPointer = sqlite3_errmsg(db) {
                 let errorMessage = String(cString: errorPointer)
                 throw SQLiteError.connectionError(message: errorMessage)
@@ -42,6 +52,7 @@ class SQLite {
             }
         }
     }
+    /// A property to hold the most recent error message
     var errorMessage: String {
         if let errorPointer = sqlite3_errmsg(dbPointer) {
             let errorMessage = String(cString: errorPointer)
@@ -53,6 +64,9 @@ class SQLite {
 }
 
 extension SQLite {
+    /// Prepares the SQL command and returns the pointer to the compiled command
+    /// - Parameter sql: The SQL command as a `String`
+    /// - Returns: An `OpaquePointer` which references the compiled SQL statement
     func prepareStatement(sql: String) throws -> OpaquePointer? {
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(dbPointer, sql, -1, &statement, nil) == SQLITE_OK else {
@@ -63,6 +77,10 @@ extension SQLite {
 }
 
 extension SQLite {
+    /// Creates a table
+    /// - Parameter createStatement: The SQL command to create the table
+    /// - Throws:
+    ///  - stepError: Incase there causes error in executing the prepared SQL command
     func createTable(createStatement: String) throws {
 
         let createTableStatement = try prepareStatement(sql: createStatement)
@@ -77,238 +95,14 @@ extension SQLite {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
 /// Used to perform operations with Database, Types conforming to this protocol can be used for database operations
 protocol Database {
     
-    // Object is optional assuming the connection made to database can fail and the object can be nil
-    static var databaseArray: Array<Data?>? { get set }
-    static var idGenerator: ElementID { get set }
-    static var name: String { get set }
-    
-    
-    associatedtype ElementID: Comparable
-    associatedtype ElementObject: Codable
-    /// Creates an entry in the database and returns the generated ID and the result of the operation(Sucess/ Failure)
-    static func create(element: ElementObject) -> (ElementID, Bool)
-    /// Returns the element present at that id
-    static func retrieve(id: ElementID) async -> ElementObject?
-    /// Updates the database with the given ID
-    static func update(id: ElementID, element: ElementObject) async -> Bool
-    /// Deletes the element present at that id
-    static func delete(id: ElementID) async -> Bool
-}
-
-enum EncodingFormat {
-    case json
-}
-
-enum CodingError: Error {
-    case invalidEncodingFormat
-    case invalidObject
-    case invalidData
-    case invalidDecodingFormat
-}
-
-extension Encodable {
-    
-    func encode(as type: EncodingFormat) throws -> Data {
-        if type == .json {
-            do {
-                let data = try JSONEncoder().encode(self)
-                return data
-            } catch EncodingError.invalidValue(_, let context) {
-                Printer.printError(context.debugDescription)
-                throw CodingError.invalidObject
-            }
-        } else {
-            throw CodingError.invalidEncodingFormat
-        }
-    }
-}
-
-extension Decodable {
-    
-    func decode(_ data: Data, from type: EncodingFormat) throws -> Self {
-        do {
-            let object = try JSONDecoder().decode(Self.self, from: data)
-            return object
-        } catch DecodingError.dataCorrupted(let context) {
-            Printer.printError(context.debugDescription)
-            throw CodingError.invalidData
-        }
-    }
-}
-
-extension Data {
-    func decode<Type: Decodable>(_ type: Type.Type, format: EncodingFormat) throws -> Type {
-        if format == .json {
-            do {
-                let object = try JSONDecoder().decode(type, from: self)
-                return object
-            } catch DecodingError.dataCorrupted(let context) {
-                Printer.printError(context.debugDescription)
-                throw CodingError.invalidData
-            }
-        } else {
-            throw CodingError.invalidDecodingFormat
-        }
-    }
-}
-
-extension Database where ElementID == Int {
-    // Connect db
-    static func connect() -> Bool {
-        if let _ = Self.databaseArray {
-            return true
-        }
-        Self.databaseArray = []
-        // return false if any error in connnection
-        return true
-    }
-    // Creates entry in table
-    static func create(element: ElementObject) -> (ElementID, Bool) {
-        // create a row in table and return success/failure, along with generated row's id
-        var success: Bool
-        if Self.databaseArray != nil {
-            if let data = try? element.encode(as: .json) {
-                Self.databaseArray?.append(data)
-                sleep(1)
-            }
-            success = true
-            Self.idGenerator = Self.databaseArray!.count
-        } else {
-            Printer.printError("failure in inserting data to database - no connection made yet!")
-            success = false
-        }
-        return (Self.idGenerator, success)
-    }
-    static func retrieve(id: ElementID) -> ElementObject? {
-        // retrieve a row from table if found, else return nil
-        if Self.databaseArray != nil {
-            if id > 0 && Self.databaseArray!.count >= id {
-                do {
-                    if let data = Self.databaseArray![id - 1] {
-                        let object = try data.decode(ElementObject.self, format: .json)
-                        sleep(1)
-                        return object
-                    } else {
-                        return nil
-                    }
-                } catch let error {
-                    Printer.printError(error)
-                    return nil
-                }
-            } else {
-                Printer.printError("failure in retrieving data from database - id not created yet")
-                return nil
-            }
-        } else {
-            Printer.printError("failure in retrieving data from database - no connection made yet!")
-            return nil
-        }
-    }
-    static func update(id: ElementID, element: ElementObject) -> Bool {
-        // update a row in table and return success/failure
-        var success: Bool
-        if Self.databaseArray != nil {
-            if Self.databaseArray!.count >= id {
-                do {
-                    let data = try element.encode(as: .json)
-                    Self.databaseArray?[id - 1] = data
-                    sleep(1)
-                    success = true
-                } catch let error {
-                    Printer.printError(error)
-                    success = false
-                }
-            } else {
-                Printer.printError("failure in updating data from database - id not created yet")
-                success = false
-            }
-        } else {
-            Printer.printError("failure in updating data from database - no connection made yet!")
-            success = false
-        }
-        return success
-    }
-    // Deletes entry in table
-    static func delete(id: ElementID) -> Bool {
-        // delete a row in table and return success/failure
-        var success: Bool
-        if Self.databaseArray != nil {
-            if Self.databaseArray!.count >= id {
-                Self.databaseArray?[id - 1] = nil
-                success = true
-                sleep(1)
-            } else {
-                Printer.printError("failure in deleting data from database - id not created yet")
-                success = false
-            }
-        } else {
-            Printer.printError("failure in deleting data from database - no connection made yet!")
-            success = false
-        }
-        return success
-    }
-}
-
-class ReminderDB: Database {
-    
-    typealias ElementID = Int
-    typealias ElementObject = Reminder
-    // Object is optional assuming the connection made to database can fail and the object can be nil
-    static var databaseArray: Array<Data?>? = nil
-    static var idGenerator = 0
-    
-    static var name: String = "Reminder"
-}
-
-class NotesDB: Database {
-    
-    typealias ElementID = Int
-    typealias ElementObject = Notes
-    
-    static var databaseArray: Array<Data?>? = nil
-    static var idGenerator = 0
-    
-    static var name: String = "Notes"
-}
-
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-/// Used to perform operations with Database, Types conforming to this protocol can be used for database operations
-protocol Database {
-    
-    // Object is optional assuming the connection made to database can fail and the object can be nil
+    /// The database object to access the database
     static var database: SQLite? { get set }
+    /// Generates ID to insert data into the database
     static var idGenerator: ElementID { get set }
+    /// The name of the database
     static var name: String { get set }
     
     
@@ -318,16 +112,16 @@ protocol Database {
     static func create(element: ElementObject) -> (ElementID, Bool)
     /// Returns the element present at that id
     static func retrieve(id: ElementID) async -> ElementObject?
-    /// Updates the database with the given ID
+    /// Updates the database at the given ID with the given Object
     static func update(id: ElementID, element: ElementObject) async -> Bool
     /// Deletes the element present at that id
     static func delete(id: ElementID) async -> Bool
 }
-
+/// The formats available to be encoded
 enum EncodingFormat {
     case json
 }
-
+/// Errors which can be thrown while Encoding/Decoding
 enum CodingError: Error {
     case invalidEncodingFormat
     case invalidObject
@@ -336,7 +130,9 @@ enum CodingError: Error {
 }
 
 extension Encodable {
-    
+    /// Encodes the type with respect to the Encoding format
+    /// - Parameter type: The type to which the object should be encoded
+    /// - Returns: The encoded `Data`
     func encode(as type: EncodingFormat) throws -> Data {
         if type == .json {
             do {
@@ -352,20 +148,10 @@ extension Encodable {
     }
 }
 
-extension Decodable {
-    
-    func decode(_ data: Data, from type: EncodingFormat) throws -> Self {
-        do {
-            let object = try JSONDecoder().decode(Self.self, from: data)
-            return object
-        } catch DecodingError.dataCorrupted(let context) {
-            Printer.printError(context.debugDescription)
-            throw CodingError.invalidData
-        }
-    }
-}
-
 extension Data {
+    /// Decodes the `Data` from the `format` specified to the `type` specified in parameters
+    /// - Parameter type: The `Type` to which the `Data` should be decoded
+    /// - Returns: The instance of the type specified in parameters
     func decode<Type: Decodable>(_ type: Type.Type, format: EncodingFormat) throws -> Type {
         if format == .json {
             do {
@@ -382,7 +168,7 @@ extension Data {
 }
 
 extension Database where ElementID == Int32 {
-    
+    /// The SQL create command for the specific table
     static var createStatement: String {
         """
         CREATE TABLE \(name)(
@@ -391,31 +177,32 @@ extension Database where ElementID == Int32 {
         );
         """
     }
-    
+    /// The SQL insert command for the specific table
     static var insertStatement: String {
         """
         INSERT INTO \(name)(id, base64_encoded_json_string)
         VALUES (?, ?);
         """
     }
-    
+    /// The SQL select command for the specific table
     static var selectStatement: String {
         """
         SELECT * FROM \(name) WHERE id = ?;
         """
     }
     
-    // Connect db
+    /// Connects the database and creates the table for the specific type
+    /// - Returns: A `Bool` value determining the success or failure
     static func connect() -> Bool {
-        // path
-        let dbPath = try? FileManager.default.url(for: .downloadsDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("commandLineAppData.sqlite").relativePath
+        /// The path where the database file is to be located
+        let DB_PATH = try? FileManager.default.url(for: .downloadsDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("commandLineAppData.sqlite").relativePath
         do {
-            // connecting to file
+            /// Connecting to the SQLite file
             if database == nil {
-                database = try SQLite.connect(path: dbPath ?? "")
+                database = try SQLite.connect(path: DB_PATH ?? "")
             }
             if let database = database {
-                // creating table
+                /// Creating the table
                 try database.createTable(createStatement: createStatement)
                 Printer.printToConsole("\(name) table created successfully")
                 return true
@@ -437,9 +224,10 @@ extension Database where ElementID == Int32 {
             return false
         }
     }
-    // Creates entry in table
+    /// Creates entry in the table of the specific type
+    /// - Parameter element: The instance to be inserted
+    /// - Returns: A tuple consisting of the `id` of the row inserted and a `Bool` to determine the result
     static func create(element: ElementObject) -> (ElementID, Bool) {
-        // create a row in table and return success/failure, along with generated row's id
         do {
             idGenerator += 1
             var result = true
@@ -448,15 +236,19 @@ extension Database where ElementID == Int32 {
                 defer {
                     sqlite3_finalize(insertSql)
                 }
+                /// Object encoded as string
                 let string = try element.encode(as: .json).base64EncodedString() as NSString
+                /// Binding the `id` and the `data`
                 guard sqlite3_bind_int(insertSql, 1, idGenerator) == SQLITE_OK &&
                         sqlite3_bind_text(insertSql, 2, string.utf8String, -1, nil) == SQLITE_OK
                 else {
                     throw SQLiteError.bindError(message: database.errorMessage)
                 }
+                /// Executing the query
                 guard sqlite3_step(insertSql) == SQLITE_DONE else {
                     throw SQLiteError.stepError(message: database.errorMessage)
                 }
+                
                 Printer.printToConsole("Successfully inserted row.")
                 return (idGenerator, result)
             } else {
@@ -470,32 +262,37 @@ extension Database where ElementID == Int32 {
             idGenerator -= 1
             return (0, false)
         }
-        
     }
-    
+    /// Returns an object retrieved from the table at the `id` provided in parameter
+    /// - Parameter id: The row id where the data is located
+    /// - Returns: An optional object constructed with the data retrieved from the database
     static func retrieve(id: ElementID) -> ElementObject? {
-        // retrieve a row from table if found, else return nil
         do {
             if let database = database {
+                /// Preparing the query
                 let selectSql = try database.prepareStatement(sql: selectStatement)
                 defer {
                     sqlite3_finalize(selectSql)
                 }
+                /// Binding the `id` with the command
                 guard sqlite3_bind_int(selectSql, 1, id) == SQLITE_OK else {
                     Printer.printError("Failure in binding id in SQL statement while retrieving from \(name) table")
                     Printer.printError(database.errorMessage)
                     return nil
                 }
+                /// Executing the query
                 guard sqlite3_step(selectSql) == SQLITE_ROW else {
                     Printer.printError("Failure in retrieving from \(name) table")
                     Printer.printError(database.errorMessage)
                     return nil
                 }
+                /// Retrieving the data of the first row from the result
                 guard let result = sqlite3_column_text(selectSql, 1) else {
                     Printer.printError("Failure in retrieving from \(name) table, no rows found")
                     Printer.printError(database.errorMessage)
                     return nil
                 }
+                /// Converting result of cString to the object
                 let object = try Data(base64Encoded: String(cString: result))?.decode(ElementObject.self, format: .json)
                 Printer.printToConsole("Successfully retrieved row.")
                 return object
@@ -509,9 +306,12 @@ extension Database where ElementID == Int32 {
             return nil
         }
     }
-    
+    /// Updates the table at the `id` with the `element`
+    /// - Parameters:
+    ///  - id: The row `id` where the element is present in the database
+    ///  - element: The object to be updated
+    /// - Returns: A `Bool` determining the result of the update query
     static func update(id: ElementID, element: ElementObject) -> Bool {
-        // update a row in table and return success/failure
         do {
             let string = try element.encode(as: .json).base64EncodedString()
             
@@ -544,9 +344,10 @@ extension Database where ElementID == Int32 {
             return false
         }
     }
-    // Deletes entry in table
+    /// Deletes the data from the table present at the `id` passed in parameter
+    /// - Parameter id: The row id of the table
+    /// - Returns: A `Bool` representing the result of the operation
     static func delete(id: ElementID) -> Bool {
-        // delete a row in table and return success/failure
         do {
             var deleteStatement: String {
                 """
@@ -580,10 +381,11 @@ extension Database where ElementID == Int32 {
 }
 
 class ReminderDB: Database {
+    
 
     typealias ElementID = Int32
     typealias ElementObject = Reminder
-    // Object is optional assuming the connection made to database can fail and the object can be nil
+    
     static var database: SQLite? = nil
     static var idGenerator: ElementID = 0
     

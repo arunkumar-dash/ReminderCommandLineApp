@@ -16,8 +16,8 @@ extension Defaults {
     /// Returns the `defaultValue` if the `mainValue` is `nil`, else returns `mainValue`
     ///
     /// - Parameters:
-    ///     - mainvalue: The mainValue which is considered if it is not nil
-    ///     - defaultValue: The value which should be considered if the `mainValue` is nil
+    ///  - mainvalue: The mainValue which is considered if it is not nil
+    ///  - defaultValue: The value which should be considered if the `mainValue` is nil
     static func setValue<Element>(mainValue: Element?, defaultValue: Element) -> Element {
         return mainValue ?? defaultValue
     }
@@ -27,7 +27,8 @@ extension Defaults {
 
 /// Returns the default values of the `Reminder` parameters
 class ReminderDefaults: Defaults {
-    
+    private init() {}
+    /// The current date
     static var currentDate: Date = Date.now
     
     /// Default title for Reminder
@@ -95,7 +96,10 @@ class ReminderDefaults: Defaults {
     }
 }
 
+/// Stores the default values of `Notes`
 class NotesDefaults: Defaults {
+    
+    private init() {}
     
     static var currentDate: Date = Date.now
     
@@ -136,7 +140,10 @@ class NotesDefaults: Defaults {
     }
 }
 
+/// Stores default values of `Notification`
 class NotificationDefaults: Defaults {
+    
+    private init() {}
     // snooze 10 minutes
     static var snoozeTime: TimeInterval = Constant.tenMinutes
     

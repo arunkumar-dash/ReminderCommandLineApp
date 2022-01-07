@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// A wrapper for the `Date` type
+/// To make it hashable upto minute-level granularity
 struct DateWrapper {
     
     var date: Date
@@ -23,23 +25,30 @@ extension DateWrapper: Hashable {
 }
 
 extension Date {
-    
+    /// Returns a wrapper for the `Date`
     func toDateWrapper() -> DateWrapper {
         return DateWrapper(self)
     }
 }
-
+/// Handles the `Notification`s
 class NotificationManager {
+    /// Semaphore to indicate the background action
     static var backgroundActionStarted = false
-    
+    /// Errors for the NotificationManager
     enum NotificationManagerError: Error {
+        /// Failure while pushing a notification
         case pushFailure
+        /// Failure when a duplicate `Notification` is found
         case notificationAlreadyExists
+        /// Failure when `Notification` is not found
         case notificationDoesNotExist
     }
-    
+    /// Dictionary to store the notifications
     private static var notifications: [DateWrapper: NotificationProtocol] = [:]
-    
+    /// Pushes the notification to the dictionary `notifications`
+    /// - Parameter notification: The `Notification` to be pushed
+    /// - Throws:
+    ///  - notificationAlreadyExists: When a duplicate `Notification` is found
     static func push(notification: NotificationProtocol) throws {
         if notifications[notification.time.toDateWrapper()] != nil {
             throw NotificationManagerError.notificationAlreadyExists
@@ -47,7 +56,10 @@ class NotificationManager {
             notifications[notification.time.toDateWrapper()] = notification
         }
     }
-    
+    /// Pops the notification from the dictionary `notifications`
+    /// - Parameter notification: The `Notification` to be popped
+    /// - Throws:
+    ///  - notificationDoesNotExist: When the notification is not found
     static func pop(notification: NotificationProtocol) throws {
         if let _ = notifications[notification.time.toDateWrapper()] {
             notifications[notification.time.toDateWrapper()] = nil
@@ -55,7 +67,10 @@ class NotificationManager {
             throw NotificationManagerError.notificationDoesNotExist
         }
     }
-    
+    /// Pushes the reminder to the dictionary `notifications`
+    /// - Parameter reminder: The `Reminder` to be pushed
+    /// - Throws:
+    ///  - notificationAlreadyExists: When a duplicate `Notification` is found
     static func push(reminder: ReminderProtocol) throws {
         for date in reminder.ringDates {
             if let id = reminder.id {
@@ -64,7 +79,10 @@ class NotificationManager {
             }
         }
     }
-    
+    /// Pops the reminder from the dictionary `notifications`
+    /// - Parameter reminder: The `Reminder` to be popped
+    /// - Throws:
+    ///  - notificationDoesNotExist: When the notification is not found
     static func pop(reminder: ReminderProtocol) throws {
         do {
             for date in reminder.ringDates {
@@ -77,7 +95,7 @@ class NotificationManager {
             Printer.printError("Notification wasn't added to the Notifications directory earlier")
         }
     }
-    // function to add next notification for the repeat pattern in the reminder
+    /// Adds next notification for the repeat pattern in the `Reminder`
     static private func addNextReminderNotification(unit: Calendar.Component, count: Int, notification: ReminderNotification) {
         if let date = Calendar.current.date(byAdding: unit, value: count, to: Date.now) {
             notifications[date.toDateWrapper()] = notification
@@ -85,7 +103,8 @@ class NotificationManager {
             Printer.printError("Unable to add \(unit) to current date for next repeated reminder notification")
         }
     }
-    
+    /// Removes the `Notification` and silences the error
+    /// - Parameter notification: The notification instance to be removed
     static private func remove(notification: NotificationProtocol) {
         do {
             try NotificationManager.pop(notification: notification)
@@ -94,11 +113,14 @@ class NotificationManager {
             Printer.printError(error)
         }
     }
-    
+    /// Fires the notification
+    /// - Parameter notification: The `Notification` instance to be notified
+    /// - Returns: A `Bool` determining the result of the operation
     static private func notify(notification: NotificationProtocol) -> Bool {
         var success = true
-        
+        /// Checks if the `Reminder` is still present in database
         if let notification = notification as? ReminderNotification {
+            /// Adds the next reminder
             if let reminder = ReminderDB.retrieve(id: Int32(notification.id)) {
                 switch reminder.repeatTiming {
                 case .everyDay:
@@ -113,12 +135,12 @@ class NotificationManager {
                     break
                 }
             } else {
-                // Reminder instance not available in db
+                /// Reminder instance not available in db
                 remove(notification: notification)
                 return success
             }
         }
-        
+        /// Plays the notification sound
         success = success && Player.searchAndPlayAudio(fileName: notification.sound)
         Printer.printLine()
         Printer.printLine()
@@ -141,7 +163,7 @@ class NotificationManager {
         remove(notification: notification)
         return success
     }
-    
+    /// Continously checks for notifications to notify every 58 seconds
     static func startBackgroundAction() {
         if backgroundActionStarted {
             return
@@ -155,7 +177,7 @@ class NotificationManager {
                         Printer.printError("Failed to notify! \ntitle: \(notification.title) \nsubtitle: \(notification.subtitle)")
                     }
                 }
-                sleep(1)
+                sleep(58)
             }
         }
     }
@@ -176,7 +198,7 @@ protocol NotificationProtocol {
 }
 
 extension NotificationProtocol {
-    // adding default implementation as the property can be implemented optionally
+    /// adding default implementation as the property can be implemented optionally
     var options: Set<NotificationOption> {
         get {
             return Set<NotificationOption>([.markAsDone, .snooze])

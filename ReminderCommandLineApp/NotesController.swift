@@ -6,9 +6,14 @@
 //
 
 import Foundation
-
+/// Controller of `Notes`
 struct NotesController {
-    
+    /// Returns a `Notes` instance
+    /// - Parameters:
+    ///  - title: The title of the Notes
+    ///  - description: The description of the Notes
+    ///  - addedTime: The `Date` when the notes was added
+    /// - Returns: A `Notes` instance
     private func createNotesInstance(
         title: String? = nil, description: String? = nil, addedTime: Date?
     ) -> Notes {

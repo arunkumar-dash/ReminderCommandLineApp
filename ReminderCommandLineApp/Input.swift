@@ -50,6 +50,7 @@ struct Input {
     }
     /// Returns an `Enum` response from user input
     ///
+    /// - Parameter type: The `enum` type to be iterated
     /// - Returns: A case of the `Enum` type from user input
     static func getEnumResponse<Enum: CaseIterable>(type: Enum.Type) -> Enum {
         for (index, enumCase) in Enum.allCases.enumerated() {
@@ -85,8 +86,8 @@ struct Input {
     /// Returns an `Integer` obtained from the User, within a certain range
     ///
     /// - Parameters:
-    ///     - range: The `Range` within which the `Integer` should lie within
-    ///     - name: The name of the value which we are obtaining
+    ///  - range: The `Range` within which the `Integer` should lie within
+    ///  - name: The name of the value which we are obtaining
     /// - Returns: The `Integer` obtained from the User
     static func getInteger<AnyRange: RangeExpression>(
         range: AnyRange, name string: String? = nil
@@ -173,9 +174,9 @@ struct Input {
     /// Returns a `Bool` indicating whether the `ringTime` passed in argument lies between `addedTime` and `eventTime`
     ///
     /// - Parameters:
-    ///     - ringTime: Number of seconds before the `evenTime` for which the `Reminder` should alert
-    ///     - addedTime: The `Date` when the `Reminder` was added
-    ///     - eventTime: The `Date` when  the `Reminder` is supposed to ring
+    ///  - ringTime: Number of seconds before the `evenTime` for which the `Reminder` should alert
+    ///  - addedTime: The `Date` when the `Reminder` was added
+    ///  - eventTime: The `Date` when  the `Reminder` is supposed to ring
     /// - Returns: A `Bool` indicating whether the `ringTime` is between `addedTime` and `eventTime`
     static func isValidRingTime(ringTime: TimeInterval, addedTime: Date, eventTime: Date?) -> Bool {
         let anHourInSeconds: TimeInterval = 3600
@@ -187,8 +188,8 @@ struct Input {
     /// Returns a `Set` consisting of `TimeInterval`s  obtained from user
     ///
     /// - Parameters:
-    ///     - addedTime: The `Date` when the `Reminder` was added
-    ///     - eventTime: The `Date` when the `Reminder` should ring
+    ///  - addedTime: The `Date` when the `Reminder` was added
+    ///  - eventTime: The `Date` when the `Reminder` should ring
     /// - Returns: A `Set`  of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
     static func getRingTimeIntervals(addedTime: Date, eventTime: Date? = nil) -> Set<TimeInterval> {
         var ringTimeIntervals: Set<TimeInterval> = []
@@ -203,7 +204,9 @@ struct Input {
         } while Input.getBooleanResponse(string: "Do you want to enter another input? ")
         return ringTimeIntervals
     }
-    
+    /// Returns a eventTime obtained from the user after validating with addedTime
+    /// - Parameter addedTime: The time the `Reminder` was added
+    /// - Returns: The `Date` obtained from the user
     static func getEventTime(addedTime: Date) -> Date? {
         while let eventTime = getOptionalDate(name: "Event Time") {
             if eventTime <= addedTime {

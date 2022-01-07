@@ -16,12 +16,12 @@ struct ReminderController {
     /// Returns a Reminder instance
     ///
     /// - Parameters:
-    ///     - title: The title of the `Reminder`
-    ///     - description: The description of the `Reminder`
-    ///     - eventTime: The time when the `Reminder` should ring
-    ///     - sound: The sound which the `Reminder` should ring
-    ///     - repeatTiming: The repetitions of the `Reminder`
-    ///     - ringTimeIntervals: The `Set` of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
+    ///  - title: The title of the `Reminder`
+    ///  - description: The description of the `Reminder`
+    ///  - eventTime: The time when the `Reminder` should ring
+    ///  - sound: The sound which the `Reminder` should ring
+    ///  - repeatTiming: The repetitions of the `Reminder`
+    ///  - ringTimeIntervals: The `Set` of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
     /// - Returns: A `Reminder` object
     private func createReminderInstance(
         addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date?,
@@ -83,15 +83,15 @@ struct ReminderController {
     /// Retrieves a `Reminder` for the given id
     ///
     /// - Parameters:
-    ///     - reminderID: The id of the `Reminder` from Database
+    ///  - reminderID: The id of the `Reminder` from Database
     func get(reminderID: Int32) -> Reminder? {
         return ReminderDB.retrieve(id: reminderID)
     }
     /// Updates a `Reminder` for the given id
     ///
     /// - Parameters:
-    ///     - reminderID: The id of the `Reminder` from Database
-    ///     - reminder: The new `Reminder` instance
+    ///  - reminderID: The id of the `Reminder` from Database
+    ///  - reminder: The new `Reminder` instance
     func edit(reminderID: Int32, reminder: Reminder) {
         // delete notification of old reminder
         do {
