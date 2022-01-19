@@ -21,6 +21,10 @@ enum WeekDay: CaseIterable, Codable {
 
 /// Pattern to repeat the `Reminder`
 enum RepeatPattern: CaseIterable, Codable {
+    
+    /// temporary case
+    case everyMinute
+    
     /// Repeats every day
     case everyDay
     /// Repeats every week
@@ -34,9 +38,7 @@ enum RepeatPattern: CaseIterable, Codable {
 }
 
 /// Types that conform to `ReminderProtocol` are Reminders
-protocol ReminderProtocol {
-    /// Time interval in seconds
-    typealias TimeInterval = Double
+protocol ReminderProtocol: Identifiable {
     /// Title of the Reminder
     var title: String { get }
     /// Description of the Reminder
@@ -54,7 +56,7 @@ protocol ReminderProtocol {
     /// The set of `Date`s the reminder should ring before the `eventTime`
     var ringDates: Set<Date> { get }
     // creating this property for notification syncing purpose
-    var id: Int? { get }
+    var id: ReminderDB.ElementID? { get set }
     
 //    let reminderView = ReminderView(self)
 }
@@ -90,7 +92,7 @@ struct Reminder: ReminderProtocol, Codable {
         }
     }
     // creating this property for notification syncing purpose
-    var id: Int? = nil
+    var id: ReminderDB.ElementID? = nil
     
     init(addedTime: Date, title: String? = nil, description: String? = nil, eventTime: Date? = nil,
          sound: String? = nil, repeatTiming: RepeatPattern? = nil, ringTimeIntervals: Set<TimeInterval>? = nil) {
@@ -101,6 +103,23 @@ struct Reminder: ReminderProtocol, Codable {
         self.sound = ReminderDefaults.setValue(sound: sound)
         self.repeatTiming = ReminderDefaults.setValue(repeatTiming: repeatTiming)
         self.ringTimeIntervals = ReminderDefaults.setValue(ringTimeIntervals: ringTimeIntervals)
+    }
+    /// Prints the reminder in the console.
+    /// - Parameter id: The `id` of the `Reminder` from database
+    static func viewReminder(id: ReminderDB.ElementID) {
+        guard let reminder = ReminderDB.retrieve(id: id) else {
+            Printer.printError("Failed to retrieve reminder from database. Received a nil value.")
+            return
+        }
+        Printer.printLine()
+        Printer.printToConsole("Reminder")
+        Printer.printLine()
+        Printer.printToConsole("Title: \(reminder.title)")
+        Printer.printToConsole("Description: \(reminder.description)")
+        Printer.printToConsole("Date: \(reminder.eventTime.description(with: .current))")
+        Printer.printToConsole("Repeat Pattern: \(reminder.repeatTiming)")
+        Player.searchAndPlayAudio(fileName: reminder.sound)
+        Printer.printLine()
     }
 }
 

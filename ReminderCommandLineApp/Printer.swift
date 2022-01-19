@@ -31,4 +31,13 @@ struct Printer {
         let errorStatement = "\tERROR: " + error.localizedDescription
         Printer.printToConsole(errorStatement)
     }
+    
+    static func printLoading(_ string: String = "Loading", forTime time: Int = 1) {
+        DispatchQueue.global().async {
+            for _ in 1...time {
+                Printer.printToConsole(string)
+                sleep(1)
+            }
+        }
+    }
 }

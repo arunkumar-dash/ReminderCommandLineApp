@@ -14,7 +14,27 @@ enum SQLiteError: Error {
     case preparationError(message: String)
     case stepError(message: String)
     case bindError(message: String)
+    case tableCreationFailure(message: String)
 }
+
+/// Localized Description for `SQLiteError`
+extension SQLiteError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .connectionError(message: let message):
+            return "Connection Error: \(message)"
+        case .preparationError(message: let message):
+            return "Preparation Error: \(message)"
+        case .stepError(message: let message):
+            return "Step Error: \(message)"
+        case .bindError(message: let message):
+            return "Bind Error: \(message)"
+        case .tableCreationFailure(message: let message):
+            return "Table Creation Failure: \(message)"
+        }
+    }
+}
+
 /// A wrapper over the SQLite3 framework
 class SQLite {
     /// The C pointer which is used to perform all database operations
@@ -35,6 +55,7 @@ class SQLite {
         var db: OpaquePointer?
         /// Opening the connection to database, `SQLITE_OK` is a success code
         if sqlite3_open(path, &db) == SQLITE_OK {
+            Printer.printToConsole("Connection success")
             return SQLite(dbPointer: db)
         } else {
             defer {
@@ -67,6 +88,8 @@ extension SQLite {
     /// Prepares the SQL command and returns the pointer to the compiled command
     /// - Parameter sql: The SQL command as a `String`
     /// - Returns: An `OpaquePointer` which references the compiled SQL statement
+    /// - Throws:
+    ///  - preparationError: When `sqlite3_prepare_v2()` returns a constant other than `SQLITE_OK`
     func prepareStatement(sql: String) throws -> OpaquePointer? {
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(dbPointer, sql, -1, &statement, nil) == SQLITE_OK else {
@@ -79,18 +102,22 @@ extension SQLite {
 extension SQLite {
     /// Creates a table
     /// - Parameter createStatement: The SQL command to create the table
-    /// - Throws:
-    ///  - stepError: Incase there causes error in executing the prepared SQL command
     func createTable(createStatement: String) throws {
+        
+        do {
 
-        let createTableStatement = try prepareStatement(sql: createStatement)
-        
-        defer {
-            sqlite3_finalize(createTableStatement)
-        }
-        
-        guard sqlite3_step(createTableStatement) == SQLITE_DONE else {
-            throw SQLiteError.stepError(message: errorMessage)
+            let createTableStatement = try prepareStatement(sql: createStatement)
+            
+            defer {
+                sqlite3_finalize(createTableStatement)
+            }
+            
+            guard sqlite3_step(createTableStatement) == SQLITE_DONE else {
+                throw SQLiteError.stepError(message: errorMessage)
+            }
+        } catch let error {
+            let errorMessage = error.localizedDescription
+            throw SQLiteError.tableCreationFailure(message: errorMessage)
         }
     }
 }
@@ -105,11 +132,11 @@ protocol Database {
     /// The name of the database
     static var name: String { get set }
     
-    
     associatedtype ElementID: Comparable
-    associatedtype ElementObject: Codable
+    associatedtype ElementObject: Codable, Identifiable
+    
     /// Creates an entry in the database and returns the generated ID and the result of the operation(Sucess/ Failure)
-    static func create(element: ElementObject) -> (ElementID, Bool)
+    static func create(element: ElementObject) -> (id: ElementID, result: Bool)
     /// Returns the element present at that id
     static func retrieve(id: ElementID) async -> ElementObject?
     /// Updates the database at the given ID with the given Object
@@ -127,6 +154,21 @@ enum CodingError: Error {
     case invalidObject
     case invalidData
     case invalidDecodingFormat
+}
+
+extension CodingError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .invalidEncodingFormat:
+            return "Invalid Encoding Format"
+        case .invalidObject:
+            return "Invalid Object"
+        case .invalidData:
+            return "Invalid Data"
+        case .invalidDecodingFormat:
+            return "Invalid Decoding Format"
+        }
+    }
 }
 
 extension Encodable {
@@ -191,43 +233,113 @@ extension Database where ElementID == Int32 {
         """
     }
     
+    static func getLastRowID() -> ElementID? {
+        var query: String {
+            """
+            SELECT MAX(id) FROM \(name);
+            """
+        }
+        do {
+            if let database = database {
+                /// Preparing the query
+                let sql = try database.prepareStatement(sql: query)
+                defer {
+                    sqlite3_finalize(sql)
+                }
+                /// Executing the query
+                guard sqlite3_step(sql) == SQLITE_ROW else {
+                    return nil
+                }
+                /// Retrieving the data of the first row from the result
+                guard let result = sqlite3_column_text(sql, 0) else {
+                    return nil
+                }
+                
+                return Int32(String(cString: result))
+            } else {
+                Printer.printError("No database connection")
+                return nil
+            }
+        } catch {
+            return nil
+        }
+    }
+    
     /// Connects the database and creates the table for the specific type
     /// - Returns: A `Bool` value determining the success or failure
     static func connect() -> Bool {
+        var result = true
+        defer {
+            /// Retrieve last row id for `idGenerator`, if connection successful
+            if result {
+                if let lastRowID = getLastRowID() {
+                    Printer.printToConsole("Retrieved last row id from \(name) table: \(lastRowID)")
+                    idGenerator = lastRowID
+                }
+            }
+        }
+        
+        let databaseFolder = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].appendingPathComponent(".ReminderAppDatabase")
         /// The path where the database file is to be located
-        let DB_PATH = try? FileManager.default.url(for: .downloadsDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("commandLineAppData.sqlite").relativePath
+        do {
+            try FileManager.default.createDirectory(at: databaseFolder, withIntermediateDirectories: true, attributes: nil)
+        } catch let error {
+            Printer.printError("Failed to create directory while connecting to database")
+            Printer.printError(error)
+            return false
+        }
+        let DB_PATH = databaseFolder.appendingPathComponent("commandLineAppData.sqlite").relativePath
+
         do {
             /// Connecting to the SQLite file
             if database == nil {
-                database = try SQLite.connect(path: DB_PATH ?? "")
+                database = try SQLite.connect(path: DB_PATH)
             }
+            
             if let database = database {
                 /// Creating the table
                 try database.createTable(createStatement: createStatement)
                 Printer.printToConsole("\(name) table created successfully")
-                return true
+                return result
             } else {
                 Printer.printError("No database connected -- unexpected error")
-                return false
+                result = false
+                return result
             }
+        } catch SQLiteError.tableCreationFailure(message: _) {
+            Printer.printToConsole("Table already exists")
+            return result
         } catch SQLiteError.connectionError(message: let error) {
             Printer.printError("SQL connection failed")
             Printer.printError(error)
-            return false
+            result = false
+            return result
         } catch SQLiteError.stepError(message: let error) {
             Printer.printError("\(name) table creation failed")
             Printer.printError(error)
-            return false
+            result = false
+            return result
+        } catch SQLiteError.bindError(message: let error) {
+            Printer.printError("Bind error while creating database")
+            Printer.printError(error)
+            result = false
+            return result
+        } catch SQLiteError.preparationError(message: let error) {
+            Printer.printError("Preparation error while creating database")
+            Printer.printError(error)
+            result = false
+            return result
         } catch let error {
             Printer.printError("Unexpected error occured while initiating database")
             Printer.printError(error)
-            return false
+            result = false
+            return result
         }
     }
     /// Creates entry in the table of the specific type
     /// - Parameter element: The instance to be inserted
     /// - Returns: A tuple consisting of the `id` of the row inserted and a `Bool` to determine the result
-    static func create(element: ElementObject) -> (ElementID, Bool) {
+    static func create(element: ElementObject) -> (id: ElementID, result: Bool) {
         do {
             idGenerator += 1
             var result = true
@@ -236,8 +348,12 @@ extension Database where ElementID == Int32 {
                 defer {
                     sqlite3_finalize(insertSql)
                 }
+                /// Assign id
+                var mutableElement = element
+                mutableElement.id = idGenerator
+                
                 /// Object encoded as string
-                let string = try element.encode(as: .json).base64EncodedString() as NSString
+                let string = try mutableElement.encode(as: .json).base64EncodedString() as NSString
                 /// Binding the `id` and the `data`
                 guard sqlite3_bind_int(insertSql, 1, idGenerator) == SQLITE_OK &&
                         sqlite3_bind_text(insertSql, 2, string.utf8String, -1, nil) == SQLITE_OK
@@ -250,17 +366,30 @@ extension Database where ElementID == Int32 {
                 }
                 
                 Printer.printToConsole("Successfully inserted row.")
-                return (idGenerator, result)
+                return (id: idGenerator, result: result)
             } else {
                 Printer.printError("No database connection")
                 idGenerator -= 1
                 result = false
-                return (0, result)
+                return (id: 0, result: result)
             }
+        } catch SQLiteError.stepError(message: let error) {
+            Printer.printError("Cannot create entry in \(name) table")
+            Printer.printError(error)
+            return (id: 0, result: false)
+        } catch SQLiteError.bindError(message: let error) {
+            Printer.printError("Cannot create entry in \(name) table")
+            Printer.printError(error)
+            return (id: 0, result: false)
+        } catch SQLiteError.preparationError(message: let error) {
+            Printer.printError("Cannot create entry in \(name) table")
+            Printer.printError(error)
+            return (id: 0, result: false)
         } catch let error {
+            Printer.printError("Cannot create entry in \(name) table")
             Printer.printError(error)
             idGenerator -= 1
-            return (0, false)
+            return (id: 0, result: false)
         }
     }
     /// Returns an object retrieved from the table at the `id` provided in parameter
@@ -292,7 +421,7 @@ extension Database where ElementID == Int32 {
                     Printer.printError(database.errorMessage)
                     return nil
                 }
-                /// Converting result of cString to the object
+                /// Converting result of cString to the object after decoding from base64
                 let object = try Data(base64Encoded: String(cString: result))?.decode(ElementObject.self, format: .json)
                 Printer.printToConsole("Successfully retrieved row.")
                 return object
@@ -313,11 +442,16 @@ extension Database where ElementID == Int32 {
     /// - Returns: A `Bool` determining the result of the update query
     static func update(id: ElementID, element: ElementObject) -> Bool {
         do {
-            let string = try element.encode(as: .json).base64EncodedString()
+            /// Assign id
+            var mutableElement = element
+            mutableElement.id = idGenerator
+            
+            /// The instance is converted to json and encoded in base64 encoding
+            let string = try mutableElement.encode(as: .json).base64EncodedString()
             
             var updateStatement: String {
                 """
-                UPDATE \(name) SET base64_encoded_json_string=\(string)
+                UPDATE \(name) SET base64_encoded_json_string='\(string)'
                 WHERE id=\(id);
                 """
             }
@@ -381,7 +515,6 @@ extension Database where ElementID == Int32 {
 }
 
 class ReminderDB: Database {
-    
 
     typealias ElementID = Int32
     typealias ElementObject = Reminder
@@ -403,3 +536,15 @@ class NotesDB: Database {
     
     static var name: String = "Notes"
 }
+
+class TaskDB: Database {
+    
+    typealias ElementID = Int32
+    typealias ElementObject = Task
+    
+    static var database: SQLite? = nil
+    static var idGenerator: ElementID = 0
+    
+    static var name: String = "Task"
+}
+

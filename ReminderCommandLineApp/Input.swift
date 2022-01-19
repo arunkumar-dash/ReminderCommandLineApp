@@ -37,7 +37,7 @@ struct Input {
         if string == nil {
             inputString = "Y/N"
         } else {
-            inputString = string! + "(Y/N)"
+            inputString = "Do you wish to enter " + string! + "?" + "(Y/N)"
         }
         while true {
             let response = Input.getResponse(string: inputString!)
@@ -52,7 +52,8 @@ struct Input {
     ///
     /// - Parameter type: The `enum` type to be iterated
     /// - Returns: A case of the `Enum` type from user input
-    static func getEnumResponse<Enum: CaseIterable>(type: Enum.Type) -> Enum {
+    static func getEnumResponse<Enum: CaseIterable>(type: Enum.Type, name: String = "") -> Enum {
+        Printer.printToConsole("Enter \(name): ")
         for (index, enumCase) in Enum.allCases.enumerated() {
             Printer.printToConsole("[\(index + 1)] \(enumCase)")
         }
@@ -67,17 +68,30 @@ struct Input {
             }
         }
     }
-    
+    /// Returns an optional enum after getting availability of input from user
+    /// - Parameters:
+    ///  - type: The `Enum` type for which the input is obtained
+    ///  - name: The name of the type in `String`
+    /// - Returns: An optional enum value
+    static func getOptionalEnumResponse<Enum: CaseIterable>(type: Enum.Type, name: String = "") -> Enum? {
+        if getBooleanResponse(string: name) {
+            return getEnumResponse(type: type, name: name)
+        } else {
+            return nil
+        }
+    }
     
     /// Returns an optional string by getting availability of input from user
     ///
-    ///     getOptionalValue(name: "title")
+    ///     getOptionalResponse(name: "title", for: "Reminder")
     ///     // gets the title? from the user
     ///
-    /// - Parameter name: The name of the value to be obtained from user
+    /// - Parameters:
+    ///   - name: The name of the value to be obtained from user
+    ///   - objectName: The name of type for which we're getting input
     /// - Returns: An optional string based on the availability of the value
-    static func getOptionalValue(name: String, for objectName: String) -> String? {
-        guard Input.getBooleanResponse(string: "Is \(name) available?") else {
+    static func getOptionalResponse(name: String, for objectName: String) -> String? {
+        guard Input.getBooleanResponse(string: name) else {
             return nil
         }
         let value = Input.getResponse(string: "\(objectName) \(name)")
@@ -135,10 +149,7 @@ struct Input {
     ///
     /// - Parameter name: a `String` to print while getting user input
     /// - Returns: A `Date` object created from user inputs
-    static func getOptionalDate(name: String?) -> Date? {
-        guard Input.getBooleanResponse(string: "Date") else {
-            return nil
-        }
+    static func getDate(name: String? = nil) -> Date {
         let yearRange = 1970...2199
         let year = getInteger(range: yearRange, name: "year")
         let month = getInteger(range: 1...12, name: "month")
@@ -162,14 +173,15 @@ struct Input {
         let date = Self.createDate(day: day, month: month, year: year, hour: hour, minute: minute, second: second)!
         return date
     }
-    /// Returns a `RepeatPattern` object created from user inputs
+    /// Returns an optional `Date` object created from user inputs
     ///
-    /// - Returns: A `RepeatPattern` object created from user inputs
-    static func getRepeatPattern() -> RepeatPattern {
-        while true {
-            Printer.printToConsole("Enter Repeat pattern:")
-            return getEnumResponse(type: RepeatPattern.self)
+    /// - Parameter name: a `String` to print while getting user input
+    /// - Returns: A `Date` object created from user inputs
+    static func getOptionalDate(name: String? = nil) -> Date? {
+        guard Input.getBooleanResponse(string: "Date") else {
+            return nil
         }
+        return getDate(name: name)
     }
     /// Returns a `Bool` indicating whether the `ringTime` passed in argument lies between `addedTime` and `eventTime`
     ///
@@ -193,6 +205,9 @@ struct Input {
     /// - Returns: A `Set`  of `TimeInterval`s when the `Reminder` should ring before the `eventTime`
     static func getRingTimeIntervals(addedTime: Date, eventTime: Date? = nil) -> Set<TimeInterval> {
         var ringTimeIntervals: Set<TimeInterval> = []
+        guard Input.getBooleanResponse(string: "number of minutes before which the reminder should give alert") else {
+            return ringTimeIntervals
+        }
         repeat {
             let secondsInAMinute = 60
             let ringTime = TimeInterval(getInteger(range: 1..., name: "number of minutes before which the reminder should give alert") * secondsInAMinute)
@@ -201,7 +216,7 @@ struct Input {
             } else {
                 Printer.printToConsole("Invalid input(Input doesn't lie within the range Time.now < input < eventTime")
             }
-        } while Input.getBooleanResponse(string: "Do you want to enter another input? ")
+        } while Input.getBooleanResponse(string: "another input")
         return ringTimeIntervals
     }
     /// Returns a eventTime obtained from the user after validating with addedTime

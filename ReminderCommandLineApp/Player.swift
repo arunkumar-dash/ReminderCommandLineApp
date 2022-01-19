@@ -7,6 +7,7 @@
 
 import Foundation
 import AVFAudio
+import AppKit
 
 /// Plays media synchronously
 struct Player {
@@ -35,12 +36,14 @@ struct Player {
             sleep(UInt32(ceil(player.duration)))
             return result
         } else {
-            return false
+            NSSound.beep()
+            return true
         }
     }
     /// Constructs a`URL` from the file name, plays the audio file from the `URL` constructed
     /// - Parameter name: The file's name (or) path (in case the file is not available in Bundle)
-    /// - Returns: A `Bool` value indicating if the audio was played successfully 
+    /// - Returns: A `Bool` value indicating if the audio was played successfully
+    @discardableResult
     static func searchAndPlayAudio(fileName name: String) -> Bool {
         if let url = Player.searchAudio(fileName: name) {
             return Player.playAudio(fileUrl: url)

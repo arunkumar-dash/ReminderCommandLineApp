@@ -28,11 +28,18 @@ extension Defaults {
 /// Returns the default values of the `Reminder` parameters
 class ReminderDefaults: Defaults {
     private init() {}
-    /// The current date
-    static var currentDate: Date = Date.now
+    
+    private static var _title: String = "Reminder"
     
     /// Default title for Reminder
-    static var title: String = "Reminder-\(Date.now.description(with: Locale.current))"
+    static var title: String {
+        get {
+            "\(_title)-\(Date.now.description(with: Locale.current))"
+        }
+        set {
+            _title = newValue
+        }
+    }
     
     /// Default description for Reminder
     static var description: String = "Your description goes here..."
@@ -40,11 +47,11 @@ class ReminderDefaults: Defaults {
     /// Default time when the Reminder rings
     /// Default time set here is one hour(3600 seconds) after the time when Reminder was added
     static var eventTime: Date {
-        Self.currentDate + Constant.oneHour
+        Date.now + Constant.oneHour
     }
     
     /// Default ringing sound of the Reminder
-    static var sound = Constant.SOUND_PATH
+    static var sound = Constant.REMINDER_SOUND_PATH
     
     /// Pattern when the Reminder repeats
     /// Default pattern is no repetitions
@@ -149,5 +156,52 @@ class NotificationDefaults: Defaults {
     
     static func setDefault(snoozeTime: TimeInterval) {
         Self.snoozeTime = snoozeTime
+    }
+}
+
+
+class TaskDefaults: Defaults {
+    
+    private init() {}
+    
+    static private var _deadline: Date? = nil
+    
+    static var sound: String = Constant.TASK_SOUND_PATH
+    
+    static var deadline: Date {
+        get {
+            if let _deadline = _deadline {
+                return _deadline
+            } else {
+                return Date.distantFuture
+            }
+        }
+        set {
+            _deadline = newValue
+        }
+    }
+    
+    static func setDefault(deadline: Date) {
+        self.deadline = deadline
+    }
+    
+    static func setDefault(sound: String) {
+        self.sound = sound
+    }
+    
+    static func setValue(deadline: Date?) -> Date {
+        if let deadline = deadline {
+            return deadline
+        } else {
+            return self.deadline
+        }
+    }
+    
+    static func setValue(sound: String?) -> String {
+        if let sound = sound {
+            return sound
+        } else {
+            return self.sound
+        }
     }
 }

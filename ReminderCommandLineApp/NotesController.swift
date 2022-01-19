@@ -8,6 +8,14 @@
 import Foundation
 /// Controller of `Notes`
 struct NotesController {
+    
+    init() {
+        /// Initiating connection to database
+        while connect() != true {
+            sleep(3)
+            Printer.printLoading("Trying to Connect database", forTime: 3)
+        }
+    }
     /// Returns a `Notes` instance
     /// - Parameters:
     ///  - title: The title of the Notes
@@ -19,23 +27,28 @@ struct NotesController {
     ) -> Notes {
         return Notes(title: title, description: description, addedTime: addedTime)
     }
-    
-    private func createNotes() -> Notes {
+    /// Creates a `Notes` instance and returns it
+    /// - Returns: A `Notes` instance created from the user inputs
+    func createNotes() -> Notes {
         while true {
             let addedTime = Date.now
-            let title = Input.getOptionalValue(name: "Title", for: "Notes")
-            let description = Input.getOptionalValue(name: "Description", for: "Notes")
+            let title = Input.getOptionalResponse(name: "Title", for: "Notes")
+            let description = Input.getOptionalResponse(name: "Description", for: "Notes")
             return createNotesInstance(title: title, description: description, addedTime: addedTime)
         }
     }
-    
-    func add() {
+    /// Connects `Notes` database
+    func connect() -> Bool {
         if NotesDB.connect() {
-            Printer.printToConsole("Successfully created notes database")
+            Printer.printToConsole("Successfully connected notes database")
+            return true
         } else {
-            Printer.printError("Failure in creating notes database")
-            return
+            Printer.printError("Failure in connecting notes database")
+            return false
         }
+    }
+    /// Adds the `Notes` instance to the database
+    func add() {
         let notes = createNotes()
         let response = NotesDB.create(element: notes)
         if response.1 {
@@ -44,20 +57,27 @@ struct NotesController {
             Printer.printError("Failure in creating entry in reminder database")
         }
     }
-    
-    func get(notesID: Int) -> Notes? {
+    /// Retrieves the `Notes` instance for the `id` passed in parameter
+    ///
+    /// - Parameter notesID: The row `id` of the database table
+    /// - Returns: The `Notes` instance for that row `id`
+    func get(notesID: NotesDB.ElementID) -> Notes? {
         return NotesDB.retrieve(id: Int32(notesID))
     }
-    
-    func edit(notesID: Int, notes: Notes) {
+    /// Updates the `Notes` present at the row`id` in the database table
+    /// - Parameters:
+    ///  - notesID: The row `id` of the data
+    ///  - notes: The `Notes` instance to be replaced with
+    func edit(notesID: NotesDB.ElementID, notes: Notes) {
         if NotesDB.update(id: Int32(notesID), element: notes) {
             Printer.printToConsole("Successfully updated to db")
         } else {
             Printer.printError("Updating notes db with id:\(notesID) unsuccessful")
         }
     }
-    
-    func delete(notesID: Int) {
+    /// Deletes the data from the database at the row `id` passed in parameter
+    /// - Parameter notesID: The `id` of the row to be deleted
+    func delete(notesID: NotesDB.ElementID) {
         if NotesDB.delete(id: Int32(notesID)) {
             Printer.printToConsole("Successfully deleted")
         } else {
@@ -82,6 +102,13 @@ struct NotesController {
             default:
                 Printer.printError("Invalid input")
             }
+        }
+    }
+    
+    func convertToReminder(_ controller: ReminderController, id: NotesDB.ElementID) {
+        let notes = self.get(notesID: id)
+        if let notes = notes {
+            controller.add(reminder: Reminder(addedTime: notes.addedTime, title: notes.title, description: notes.description, eventTime: nil, sound: nil, repeatTiming: nil, ringTimeIntervals: nil))
         }
     }
 }

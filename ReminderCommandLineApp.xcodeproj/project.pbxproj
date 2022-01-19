@@ -10,6 +10,10 @@
 		1D6520522782B62E003FCEEA /* NotesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520512782B62E003FCEEA /* NotesController.swift */; };
 		1D6520542782B63E003FCEEA /* Notes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520532782B63E003FCEEA /* Notes.swift */; };
 		1D6520572785833C003FCEEA /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520562785833C003FCEEA /* Constant.swift */; };
+		1D652059278850D4003FCEEA /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D652058278850D4003FCEEA /* MainController.swift */; };
+		1D6D48EE278EE6C3004A8BFE /* Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6D48ED278EE6C3004A8BFE /* Identifiable.swift */; };
+		1D6D48F227968A77004A8BFE /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6D48F127968A77004A8BFE /* Task.swift */; };
+		1D6D48F427968A8C004A8BFE /* TaskController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6D48F327968A8C004A8BFE /* TaskController.swift */; };
 		1D880797277AE9B700896BD4 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D880796277AE9B700896BD4 /* Player.swift */; };
 		1D8807C6277C3E0A00896BD4 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8807C5277C3E0A00896BD4 /* Notification.swift */; };
 		1D8C83B9276081630061D276 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C83B8276081630061D276 /* main.swift */; };
@@ -37,6 +41,10 @@
 		1D6520512782B62E003FCEEA /* NotesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesController.swift; sourceTree = "<group>"; };
 		1D6520532782B63E003FCEEA /* Notes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notes.swift; sourceTree = "<group>"; };
 		1D6520562785833C003FCEEA /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
+		1D652058278850D4003FCEEA /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
+		1D6D48ED278EE6C3004A8BFE /* Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Identifiable.swift; sourceTree = "<group>"; };
+		1D6D48F127968A77004A8BFE /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
+		1D6D48F327968A8C004A8BFE /* TaskController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskController.swift; sourceTree = "<group>"; };
 		1D880796277AE9B700896BD4 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		1D8807C5277C3E0A00896BD4 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		1D8C83B5276081630061D276 /* ReminderCommandLineApp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ReminderCommandLineApp; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,18 +87,22 @@
 		1D8C83B7276081630061D276 /* ReminderCommandLineApp */ = {
 			isa = PBXGroup;
 			children = (
-				1D880796277AE9B700896BD4 /* Player.swift */,
-				1DBA07572768531A0076C4C5 /* Database.swift */,
-				1DBA0753276765470076C4C5 /* ReminderController.swift */,
-				1DBA075127671F280076C4C5 /* Input.swift */,
-				1DBA074F2763361B0076C4C5 /* Defaults.swift */,
-				1D8C83BF2761B6360061D276 /* Reminder.swift */,
-				1D8C83C1276328E60061D276 /* Printer.swift */,
-				1D8C83B8276081630061D276 /* main.swift */,
-				1D8807C5277C3E0A00896BD4 /* Notification.swift */,
-				1D6520512782B62E003FCEEA /* NotesController.swift */,
-				1D6520532782B63E003FCEEA /* Notes.swift */,
 				1D6520562785833C003FCEEA /* Constant.swift */,
+				1DBA07572768531A0076C4C5 /* Database.swift */,
+				1DBA074F2763361B0076C4C5 /* Defaults.swift */,
+				1D6D48ED278EE6C3004A8BFE /* Identifiable.swift */,
+				1DBA075127671F280076C4C5 /* Input.swift */,
+				1D8C83B8276081630061D276 /* main.swift */,
+				1D652058278850D4003FCEEA /* MainController.swift */,
+				1D6520532782B63E003FCEEA /* Notes.swift */,
+				1D6520512782B62E003FCEEA /* NotesController.swift */,
+				1D8807C5277C3E0A00896BD4 /* Notification.swift */,
+				1D880796277AE9B700896BD4 /* Player.swift */,
+				1D8C83C1276328E60061D276 /* Printer.swift */,
+				1D8C83BF2761B6360061D276 /* Reminder.swift */,
+				1DBA0753276765470076C4C5 /* ReminderController.swift */,
+				1D6D48F127968A77004A8BFE /* Task.swift */,
+				1D6D48F327968A8C004A8BFE /* TaskController.swift */,
 			);
 			path = ReminderCommandLineApp;
 			sourceTree = "<group>";
@@ -163,7 +175,11 @@
 				1D880797277AE9B700896BD4 /* Player.swift in Sources */,
 				1D8C83C02761B6360061D276 /* Reminder.swift in Sources */,
 				1DBA07582768531A0076C4C5 /* Database.swift in Sources */,
+				1D6D48F427968A8C004A8BFE /* TaskController.swift in Sources */,
 				1DBA0754276765470076C4C5 /* ReminderController.swift in Sources */,
+				1D6D48EE278EE6C3004A8BFE /* Identifiable.swift in Sources */,
+				1D652059278850D4003FCEEA /* MainController.swift in Sources */,
+				1D6D48F227968A77004A8BFE /* Task.swift in Sources */,
 				1D6520572785833C003FCEEA /* Constant.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
