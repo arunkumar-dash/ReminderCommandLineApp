@@ -74,21 +74,30 @@ class NotificationManager {
     /// Semaphore to indicate the background action
     static var backgroundActionStarted = false
     /// Dictionary to store the notifications
-    private static var notifications: [DateWrapper: NotificationProtocol] = [:] {
+    private static var notifications: [DateWrapper: [NotificationProtocol]] = [:] {
         didSet {
             NotificationManager.sync()
         }
     }
     /// Pushes the notification to the dictionary `notifications`
     /// - Parameter notification: The `Notification` to be pushed
-    /// - Throws:
-    ///  - notificationAlreadyExists: When a duplicate `Notification` is found
-    static func push(notification: NotificationProtocol) throws {
-        
-        if notifications[notification.time.toDateWrapper()] != nil {
-            throw NotificationManagerError.notificationAlreadyExists
-        } else if notification.time > Date.now {
-            notifications[notification.time.toDateWrapper()] = notification
+    static func push(notification: NotificationProtocol) {
+        if notification.time > Date.now {
+            if notifications[notification.time.toDateWrapper()] != nil {
+                notifications[notification.time.toDateWrapper()]?.append(notification)
+            } else  {
+                notifications[notification.time.toDateWrapper()] = [notification]
+            }
+        }
+    }
+    
+    static func push(notification: NotificationProtocol, date: Date) {
+        if date > Date.now {
+            if notifications[date.toDateWrapper()] != nil {
+                notifications[date.toDateWrapper()]?.append(notification)
+            } else  {
+                notifications[date.toDateWrapper()] = [notification]
+            }
         }
     }
     /// Pops the notification from the dictionary `notifications`
@@ -96,8 +105,14 @@ class NotificationManager {
     /// - Throws:
     ///  - notificationDoesNotExist: When the notification is not found
     static func pop(notification: NotificationProtocol) throws {
-        if let _ = notifications[notification.time.toDateWrapper()] {
-            notifications[notification.time.toDateWrapper()] = nil
+        if let notifications = notifications[notification.time.toDateWrapper()] {
+            for (index, notificationItr) in notifications.enumerated() {
+                if notificationItr.id == notification.id && notificationItr.id != nil {
+                    NotificationManager.notifications[notification.time.toDateWrapper()]?.remove(at: index)
+                    return
+                }
+            }
+            throw NotificationManagerError.notificationDoesNotExist
         } else {
             /// ! - throws even when removing notification while updating reminder
             throw NotificationManagerError.notificationDoesNotExist
@@ -120,7 +135,7 @@ class NotificationManager {
     static func notificationAction(notificationOption: NotificationOption, notification: NotificationProtocol) {
         if notificationOption == .snooze {
             let snoozedTime = Date.now + NotificationDefaults.snoozeTime
-            notifications[snoozedTime.toDateWrapper()] = notification
+            Self.push(notification: notification, date: snoozedTime)
         } else if notificationOption == .view {
             notification.view()
         }
@@ -166,9 +181,11 @@ class NotificationManager {
         
         DispatchQueue.global().async {
             while true {
-                if let notification = notifications[Date.now.toDateWrapper()] {
-                    if NotificationManager.notify(notification: notification) == false {
-                        Printer.printError("Failed to notify! \ntitle: \(notification.title) \nsubtitle: \(notification.subtitle)")
+                if let notificationSet = notifications[Date.now.toDateWrapper()] {
+                    for notification in notificationSet {
+                        if NotificationManager.notify(notification: notification) == false {
+                            Printer.printError("Failed to notify! \ntitle: \(notification.title) \nsubtitle: \(notification.subtitle)")
+                        }
                     }
                 }
                 sleep(PAUSE_TIME)
@@ -190,7 +207,7 @@ class NotificationManager {
         let url = databaseFolder.appendingPathComponent("notifications.json")
         if let data = try? Data(contentsOf: url) {
             Printer.printToConsole("Saved notifications file found")
-            if let notifications = try? JSONDecoder().decode([DateWrapper: Notification].self, from: data) {
+            if let notifications = try? JSONDecoder().decode([DateWrapper: [Notification]].self, from: data) {
                 self.notifications = notifications
                 Printer.printToConsole("Saved notifications decoded")
             } else {
@@ -199,7 +216,7 @@ class NotificationManager {
             }
         } else {
             do {
-                if let notifications = notifications as? [DateWrapper: Notification] {
+                if let notifications = notifications as? [DateWrapper: [Notification]] {
                     try JSONEncoder().encode(notifications).write(to: url)
                 } else {
                     Printer.printError("Failed to downcast Notification while encoding notifications to file")
@@ -226,7 +243,7 @@ class NotificationManager {
         
         let url = databaseFolder.appendingPathComponent("notifications.json")
         do {
-            if let notifications = notifications as? [DateWrapper: Notification] {
+            if let notifications = notifications as? [DateWrapper: [Notification]] {
                 try JSONEncoder().encode(notifications).write(to: url)
             } else {
                 Printer.printError("Failed to downcast Notification while encoding notifications to file")
@@ -240,48 +257,7 @@ class NotificationManager {
     }
 }
 
-//extension NotificationManager {
-//    /// Pushes the reminder to the dictionary `notifications`
-//    /// - Parameter reminder: The `Reminder` to be pushed
-//    /// - Throws:
-//    ///  - notificationAlreadyExists: When a duplicate `Notification` is found
-//    static func push(reminder: ReminderProtocol) throws {
-//        for date in reminder.ringDates {
-//            if let id = reminder.id {
-//                let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date, addedTime: reminder.addedTime, id: id)
-//                try NotificationManager.push(notification: reminderNotification)
-//            } else {
-//                Printer.printError("Reminder id not found while pushing notification for reminder: \(reminder.title)")
-//            }
-//        }
-//    }
-//    /// Pops the reminder from the dictionary `notifications`
-//    /// - Parameter reminder: The `Reminder` to be popped
-//    /// - Throws:
-//    ///  - notificationDoesNotExist: When the notification is not found
-//    static func pop(reminder: ReminderProtocol) throws {
-//        do {
-//            for date in reminder.ringDates {
-//                if let id = reminder.id {
-//                    let reminderNotification = ReminderNotification(subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date, addedTime: reminder.addedTime, id: id)
-//                    try NotificationManager.pop(notification: reminderNotification)
-//                }
-//            }
-//        } catch NotificationManagerError.notificationDoesNotExist {
-//            Printer.printError("Notification wasn't added to the Notifications directory earlier")
-//        }
-//    }
-//    /// Adds next notification for the repeat pattern in the `Reminder`
-//    static private func addNextReminderNotification(unit: Calendar.Component, count: Int, notification: ReminderNotification) {
-//        if let date = Calendar.current.date(byAdding: unit, value: count, to: notification.time) {
-//            var newNotification = notification
-//            newNotification.time = date
-//            notifications[date.toDateWrapper()] = newNotification
-//        } else {
-//            Printer.printError("Unable to add \(unit) to current date for next repeated reminder notification")
-//        }
-//    }
-//}
+
 
 
 
@@ -294,7 +270,7 @@ extension NotificationManager {
         for date in reminder.ringDates {
             if let id = reminder.id {
                 let reminderNotification = Notification(id: id, title: "Reminder", subtitle: reminder.title, body: reminder.description, sound: reminder.sound, time: date, addedTime: reminder.addedTime)
-                try NotificationManager.push(notification: reminderNotification)
+                NotificationManager.push(notification: reminderNotification)
             } else {
                 Printer.printError("Reminder id not found while pushing notification for reminder: \(reminder.title)")
             }
@@ -321,33 +297,13 @@ extension NotificationManager {
         if let date = Calendar.current.date(byAdding: unit, value: count, to: notification.time) {
             var newNotification = notification
             newNotification.time = date
-            notifications[date.toDateWrapper()] = newNotification
+            Self.push(notification: newNotification, date: date)
         } else {
             Printer.printError("Unable to add \(unit) to current date for next repeated reminder notification")
         }
     }
 }
-//
-//extension NotificationManager {
-//    /// Pushes the reminder to the dictionary `notifications`
-//    /// - Parameter task: The `Task` to be pushed
-//    /// - Throws:
-//    ///  - notificationAlreadyExists: When a duplicate `Notification` is found
-//    static func push(task: TaskProtocol) throws {
-//        let taskDeadlineString = "Deadline: \(task.deadline.description(with: .current))"
-//        let taskNotification = TaskNotification(subtitle: taskDeadlineString, body: task.taskDescription, sound: task.sound, time: task.deadline, addedTime: task.addedTime, id: task.id)
-//        try NotificationManager.push(notification: taskNotification)
-//    }
-//    /// Pops the reminder from the dictionary `notifications`
-//    /// - Parameter task: The `Task` to be popped
-//    /// - Throws:
-//    ///  - notificationDoesNotExist: When the notification is not found
-//    static func pop(task: TaskProtocol) throws {
-//        let taskDeadlineString = "Deadline: \(task.deadline.description(with: .current))"
-//        let taskNotification = TaskNotification(subtitle: taskDeadlineString, body: task.taskDescription, sound: task.sound, time: task.deadline, addedTime: task.addedTime, id: task.id)
-//        try NotificationManager.pop(notification: taskNotification)
-//    }
-//}
+
 
 
 
@@ -359,7 +315,7 @@ extension NotificationManager {
     static func push(task: TaskProtocol) throws {
         let taskDeadlineString = "Deadline: \(task.deadline.description(with: .current))"
         let taskNotification = Notification(id: task.id, title: "Task", subtitle: taskDeadlineString, body: task.taskDescription, sound: task.sound, time: task.deadline, addedTime: task.addedTime)
-        try NotificationManager.push(notification: taskNotification)
+        NotificationManager.push(notification: taskNotification)
     }
     /// Pops the reminder from the dictionary `notifications`
     /// - Parameter task: The `Task` to be popped
@@ -374,76 +330,7 @@ extension NotificationManager {
 
 
 
-//extension NotificationManager {
-//
-//    /// Fires the notification
-//    /// - Parameter notification: The `Notification` instance to be notified
-//    /// - Returns: A `Bool` determining the result of the operation
-//    static private func notify(notification: NotificationProtocol) -> Bool {
-//        var success = true
-//        /// Checks if the notification is a `ReminderNotification`
-//        if let notification = notification as? ReminderNotification {
-//            if let id = notification.id {
-//                /// Checks if the `Reminder` is still present in database
-//                if let reminder = ReminderDB.retrieve(id: id) {
-//                    /// Checks if the reminder is not modified (if its modified, new notification is added while modifying)
-//                    if notification.addedTime == reminder.addedTime {
-//                        /// Adds the next reminder
-//
-//                        switch reminder.repeatTiming {
-//
-//                        /// Temporary case for testing
-//                        case .everyMinute:
-//                            addNextReminderNotification(unit: .minute, count: 1, notification: notification)
-//
-//                        case .everyDay:
-//                            addNextReminderNotification(unit: .day, count: 1, notification: notification)
-//                        case .everyWeek:
-//                            addNextReminderNotification(unit: .day, count: 7, notification: notification)
-//                        case .everyMonth:
-//                            addNextReminderNotification(unit: .month, count: 1, notification: notification)
-//                        case .everyYear:
-//                            addNextReminderNotification(unit: .year, count: 1, notification: notification)
-//                        default:
-//                            break
-//                        }
-//                    } else {
-//                        /// Reminder has been updated, hence not displaying the out-dated notification
-//                        remove(notification: notification)
-//                        return success
-//                    }
-//                } else {
-//                    /// Reminder instance not available in db
-//                    remove(notification: notification)
-//                    return success
-//                }
-//            } else {
-//                Printer.printError("No id found in notification while notifying")
-//            }
-//        /// Checks if the notification is a `TaskNotification`
-//        } else if let notification = notification as? TaskNotification {
-//            if let id = notification.id {
-//                if let task = TaskDB.retrieve(id: id) {
-//                    /// Checks if the `Task` is modified
-//                    if task.addedTime != notification.addedTime {
-//                        /// `Task` has been updated, hence not displaying the out-dated notification
-//                        remove(notification: notification)
-//                    }
-//                } else {
-//                    /// Task instance not available in db
-//                    remove(notification: notification)
-//                    return success
-//                }
-//            } else {
-//                Printer.printError("No id found in notification while notifying")
-//            }
-//        }
-//
-//        success = success && displayReminder(notification: notification)
-//        return success
-//    }
-//}
-//
+
 
 
 extension NotificationManager {
@@ -549,79 +436,7 @@ extension NotificationProtocol {
         }
     }
 }
-/*
 
-class NotificationProtocol: Identifiable, Codable {
-    
-    var id: Int32?
-    var title: String
-    var subtitle: String
-    var body: String
-    var sound: String
-    var time: Date
-    var options: Set<NotificationOption>
-    
-    init(title: String, subtitle: String, body: String, sound: String, time: Date, options: Set<NotificationOption> = Set<NotificationOption>(NotificationOption.allCases), id: Int32? = nil) {
-        self.title = title
-        self.subtitle = subtitle
-        self.body = body
-        self.sound = sound
-        self.time = time
-        self.options = options
-        self.id = id
-    }
-    
-    /// Displays the object linked with the Notification
-    func view() {}
-}
-
-class ReminderNotification: NotificationProtocol {
-    
-    var addedTime: Date
-    
-    override init(title: String = "Reminder", subtitle: String, body: String, sound: String, time: Date, options: Set<NotificationOption> = Set<NotificationOption>(NotificationOption.allCases), id: ReminderDB.ElementID? = nil) {
-        super.init(title: title, subtitle: subtitle, body: body, sound: sound, time: time, options: options, id: id)
-    }
-    
-    convenience init(subtitle: String, body: String, sound: String, time: Date, addedTime: Date, options: Set<NotificationOption> = Set<NotificationOption>(NotificationOption.allCases), id: Int32? = nil) {
-        self.addedTime = addedTime
-        self.init(subtitle: subtitle, body: body, sound: sound, time: time, options: options, id: id)
-    }
-    
-    required init(from decoder: Decoder) throws {
-        try super.init(from: decoder)
-    }
-    
-    /// Displays the object linked with the Notification
-    override func view() {
-        if let id = self.id {
-            Reminder.viewReminder(id: id)
-        }
-    }
-}
-
-class TaskNotification: NotificationProtocol {
-    
-    var addedTime: Date
-    
-    init(title: String = "Task", subtitle: String, body: String, sound: String, time: Date, addedTime: Date, options: Set<NotificationOption> = Set<NotificationOption>(NotificationOption.allCases), id: Int32? = nil) {
-        self.addedTime = addedTime
-        super.init(title: title, subtitle: subtitle, body: body, sound: sound, time: time, options: options, id: id)
-    }
-    
-    required init(from decoder: Decoder) throws {
-        try super.init(from: decoder)
-    }
-    
-    /// Displays the object linked with the Notification
-    override func view() {
-        if let id = self.id {
-            Task.viewTask(id: id)
-        }
-    }
-}
-
-*/
 
 struct Notification: NotificationProtocol {
     var id: Int32?
@@ -634,26 +449,4 @@ struct Notification: NotificationProtocol {
     var addedTime: Date
 }
 
-/*
-struct ReminderNotification: NotificationProtocol {
-    var title: String = "Reminder"
-    var subtitle: String
-    var body: String
-    var sound: String
-    var time: Date
-    /// Reminder added time
-    var addedTime: Date
-    var id: ReminderDB.ElementID?
-}
 
-struct TaskNotification: NotificationProtocol {
-    var title: String = "Task"
-    var subtitle: String
-    var body: String
-    var sound: String
-    var time: Date
-    /// Task added time
-    var addedTime: Date
-    var id: TaskDB.ElementID?
-}
-*/

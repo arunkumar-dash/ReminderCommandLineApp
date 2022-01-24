@@ -11,6 +11,9 @@ class MainController {
         NotificationManager.startBackgroundAction()
         Constant.updateFromDB()
         NotificationManager.updateFromDB()
+        
+        /// connecting for retrieving saved notifications
+        
         ReminderDB.connect()
         NotesDB.connect()
         TaskDB.connect()
