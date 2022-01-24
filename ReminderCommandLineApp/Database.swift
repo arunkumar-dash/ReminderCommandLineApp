@@ -267,6 +267,7 @@ extension Database where ElementID == Int32 {
     
     /// Connects the database and creates the table for the specific type
     /// - Returns: A `Bool` value determining the success or failure
+    @discardableResult
     static func connect() -> Bool {
         var result = true
         defer {
@@ -279,7 +280,7 @@ extension Database where ElementID == Int32 {
             }
         }
         
-        let databaseFolder = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].appendingPathComponent(".ReminderAppDatabase")
+        let databaseFolder = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].appendingPathComponent(Constant.DB_FOLDER)
         /// The path where the database file is to be located
         do {
             try FileManager.default.createDirectory(at: databaseFolder, withIntermediateDirectories: true, attributes: nil)

@@ -29,37 +29,63 @@ extension Defaults {
 class ReminderDefaults: Defaults {
     private init() {}
     
-    private static var _title: String = "Reminder"
-    
     /// Default title for Reminder
     static var title: String {
         get {
-            "\(_title)-\(Date.now.description(with: Locale.current))"
+            "\(Constant.shared.REMINDER_TITLE)-\(Date.now.description(with: Locale.current))"
         }
         set {
-            _title = newValue
+            Constant.shared.REMINDER_TITLE = newValue
         }
     }
     
     /// Default description for Reminder
-    static var description: String = "Your description goes here..."
+    static var description: String {
+        get {
+            return Constant.shared.REMINDER_DESCRIPTION
+        }
+        set {
+            Constant.shared.REMINDER_DESCRIPTION = newValue
+        }
+    }
     
     /// Default time when the Reminder rings
     /// Default time set here is one hour(3600 seconds) after the time when Reminder was added
     static var eventTime: Date {
-        Date.now + Constant.oneHour
+        Date.now + Constant.shared.REMINDER_EVENT_TIME.rawValue
     }
     
     /// Default ringing sound of the Reminder
-    static var sound = Constant.REMINDER_SOUND_PATH
+    static var sound: String {
+        get {
+            Constant.shared.REMINDER_SOUND_PATH
+        }
+        set {
+            Constant.shared.REMINDER_SOUND_PATH = newValue
+        }
+    }
     
     /// Pattern when the Reminder repeats
     /// Default pattern is no repetitions
-    static var repeatTiming: RepeatPattern = .never
+    static var repeatTiming: RepeatPattern {
+        get {
+            Constant.shared.REMINDER_REPEAT_PATTERN
+        }
+        set {
+            Constant.shared.REMINDER_REPEAT_PATTERN = newValue
+        }
+    }
     
     /// Set of `TimeInterval`s when the Reminder should ring before the `eventTime`
     /// By default the reminder rings 30 minutes before the `eventTime`
-    static var ringTimeIntervals = Set([Constant.halfHour])
+    static var ringTimeIntervals: Set<TimeInterval> {
+        get {
+            Constant.shared.REMINDER_RING_TIME_INTERVALS
+        }
+        set {
+            Constant.shared.REMINDER_RING_TIME_INTERVALS = newValue
+        }
+    }
 //    let reminderView = ReminderView(self)
     
     static func setDefault(title: String) {
@@ -110,9 +136,24 @@ class NotesDefaults: Defaults {
     
     static var currentDate: Date = Date.now
     
-    static var title: String = "Note-\(Date.now.description(with: Locale.current))"
+    static var title: String {
+        get {
+            "\(Constant.shared.NOTES_TITLE)-\(Date.now.description(with: Locale.current))"
+        }
+        set {
+            Constant.shared.NOTES_TITLE = newValue
+        }
+    }
     
-    static var description: String = "Your description goes here..."
+    
+    static var description: String {
+        get {
+            return Constant.shared.NOTES_DESCRIPTION
+        }
+        set {
+            Constant.shared.NOTES_DESCRIPTION = newValue
+        }
+    }
     
     static func setDefault(title: String) {
         Self.title = title
@@ -152,7 +193,14 @@ class NotificationDefaults: Defaults {
     
     private init() {}
     // snooze 10 minutes
-    static var snoozeTime: TimeInterval = Constant.tenMinutes
+    static var snoozeTime: TimeInterval {
+        get {
+            Constant.shared.NOTIFICATION_SNOOZE_TIME
+        }
+        set {
+            Constant.shared.NOTIFICATION_SNOOZE_TIME = newValue
+        }
+    }
     
     static func setDefault(snoozeTime: TimeInterval) {
         Self.snoozeTime = snoozeTime
@@ -164,9 +212,23 @@ class TaskDefaults: Defaults {
     
     private init() {}
     
-    static private var _deadline: Date? = nil
+    static private var _deadline: Date? {
+        get {
+            Constant.shared.TASK_DEADLINE
+        }
+        set {
+            Constant.shared.TASK_DEADLINE = newValue
+        }
+    }
     
-    static var sound: String = Constant.TASK_SOUND_PATH
+    static var sound: String {
+        get {
+            Constant.shared.TASK_SOUND_PATH
+        }
+        set {
+            Constant.shared.TASK_SOUND_PATH = newValue
+        }
+    }
     
     static var deadline: Date {
         get {

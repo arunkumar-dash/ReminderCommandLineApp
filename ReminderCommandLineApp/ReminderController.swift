@@ -211,10 +211,8 @@ struct ReminderController {
                 let ringTimeIntervals = Input.getRingTimeIntervals(addedTime: Date.distantFuture)
                 ReminderDefaults.setDefault(ringTimeIntervals: ringTimeIntervals)
             case 5:
-                let response = Input.getBooleanResponse(string: "snooze time as 5 minutes")
-                if response {
-                    NotificationDefaults.snoozeTime = Constant.fiveMinutes
-                }
+                let response = Input.getEnumResponse(type: Constant.TimeIntervals.self, name: "Default snooze time")
+                NotificationDefaults.setDefault(snoozeTime: response.rawValue)
             case 6:
                 break outerLoop
             default:

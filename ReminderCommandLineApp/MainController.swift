@@ -9,6 +9,11 @@ import Foundation
 class MainController {
     init() {
         NotificationManager.startBackgroundAction()
+        Constant.updateFromDB()
+        NotificationManager.updateFromDB()
+        ReminderDB.connect()
+        NotesDB.connect()
+        TaskDB.connect()
     }
 
     private func reminderController() {
@@ -130,14 +135,16 @@ class MainController {
     func run() {
     outerLoop:
         while true {
-            Printer.printToConsole("Select: \n1. reminder \n2. notes \n3. exit\n")
-            let response = Input.getInteger(range: 1...3)
+            Printer.printToConsole("Select: \n1. reminder \n2. notes \n3. task \n4. exit\n")
+            let response = Input.getInteger(range: 1...4)
             switch response {
             case 1:
                 reminderController()
             case 2:
                 notesController()
             case 3:
+                taskController()
+            case 4:
                 break outerLoop
             default:
                 break
