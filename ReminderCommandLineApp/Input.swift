@@ -70,8 +70,8 @@ struct Input {
     }
     /// Returns an optional enum after getting availability of input from user
     /// - Parameters:
-    ///  - type: The `Enum` type for which the input is obtained
-    ///  - name: The name of the type in `String`
+    ///   - type: The `Enum` type for which the input is obtained
+    ///   - name: The name of the type in `String`
     /// - Returns: An optional enum value
     static func getOptionalEnumResponse<Enum: CaseIterable>(type: Enum.Type, name: String = "") -> Enum? {
         if getBooleanResponse(string: name) {
@@ -100,8 +100,8 @@ struct Input {
     /// Returns an `Integer` obtained from the User, within a certain range
     ///
     /// - Parameters:
-    ///  - range: The `Range` within which the `Integer` should lie within
-    ///  - name: The name of the value which we are obtaining
+    ///   - range: The `Range` within which the `Integer` should lie within
+    ///   - name: The name of the value which we are obtaining
     /// - Returns: The `Integer` obtained from the User
     static func getInteger<AnyRange: RangeExpression>(
         range: AnyRange, name string: String? = nil

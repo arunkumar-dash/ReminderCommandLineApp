@@ -264,6 +264,40 @@ extension Database where ElementID == Int32 {
             return nil
         }
     }
+    static func getAllRows() -> [ElementObject?] {
+        let selectAllStatement: String =
+        """
+        SELECT * FROM Reminder;
+        """
+        var reminderList: [ElementObject?] = []
+        do {
+            if let database = database {
+                /// Preparing the query
+                let selectSql = try database.prepareStatement(sql: selectAllStatement)
+                defer {
+                    sqlite3_finalize(selectSql)
+                }
+                /// Executing the query
+                while sqlite3_step(selectSql) == SQLITE_ROW {
+                    /// Retrieving the data of the first row from the result
+                    guard let result = sqlite3_column_text(selectSql, 1) else {
+                        continue
+                    }
+                    /// Converting result of cString to the object after decoding from base64
+                    let object = try? Data(base64Encoded: String(cString: result))?.decode(ElementObject.self, format: .json)
+                    reminderList.append(object)
+                }
+                return reminderList
+            } else {
+                print("No database connection")
+                return []
+            }
+        } catch let error {
+            print("Error while retrieving row from Reminder table")
+            print(error)
+            return []
+        }
+    }
     
     /// Connects the database and creates the table for the specific type
     /// - Returns: A `Bool` value determining the success or failure
@@ -289,7 +323,7 @@ extension Database where ElementID == Int32 {
             Printer.printError(error)
             return false
         }
-        let DB_PATH = databaseFolder.appendingPathComponent("commandLineAppData.sqlite").relativePath
+        let DB_PATH = databaseFolder.appendingPathComponent("\(CurrentUser.username).sqlite").relativePath
 
         do {
             /// Connecting to the SQLite file

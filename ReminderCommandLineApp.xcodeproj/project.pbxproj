@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1D4EF9F027CF9B8F008742D0 /* CurrentUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4EF9EF27CF9B8F008742D0 /* CurrentUser.swift */; };
+		1D4EF9F627D08014008742D0 /* CredentialsDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4EF9F527D08014008742D0 /* CredentialsDB.swift */; };
 		1D6520522782B62E003FCEEA /* NotesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520512782B62E003FCEEA /* NotesController.swift */; };
 		1D6520542782B63E003FCEEA /* Notes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520532782B63E003FCEEA /* Notes.swift */; };
 		1D6520572785833C003FCEEA /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6520562785833C003FCEEA /* Constant.swift */; };
@@ -38,6 +40,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1D4EF9EF27CF9B8F008742D0 /* CurrentUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentUser.swift; sourceTree = "<group>"; };
+		1D4EF9F527D08014008742D0 /* CredentialsDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsDB.swift; sourceTree = "<group>"; };
 		1D6520512782B62E003FCEEA /* NotesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesController.swift; sourceTree = "<group>"; };
 		1D6520532782B63E003FCEEA /* Notes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notes.swift; sourceTree = "<group>"; };
 		1D6520562785833C003FCEEA /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
@@ -103,6 +107,8 @@
 				1DBA0753276765470076C4C5 /* ReminderController.swift */,
 				1D6D48F127968A77004A8BFE /* Task.swift */,
 				1D6D48F327968A8C004A8BFE /* TaskController.swift */,
+				1D4EF9EF27CF9B8F008742D0 /* CurrentUser.swift */,
+				1D4EF9F527D08014008742D0 /* CredentialsDB.swift */,
 			);
 			path = ReminderCommandLineApp;
 			sourceTree = "<group>";
@@ -172,12 +178,14 @@
 				1D6520542782B63E003FCEEA /* Notes.swift in Sources */,
 				1D8C83B9276081630061D276 /* main.swift in Sources */,
 				1D6520522782B62E003FCEEA /* NotesController.swift in Sources */,
+				1D4EF9F027CF9B8F008742D0 /* CurrentUser.swift in Sources */,
 				1D880797277AE9B700896BD4 /* Player.swift in Sources */,
 				1D8C83C02761B6360061D276 /* Reminder.swift in Sources */,
 				1DBA07582768531A0076C4C5 /* Database.swift in Sources */,
 				1D6D48F427968A8C004A8BFE /* TaskController.swift in Sources */,
 				1DBA0754276765470076C4C5 /* ReminderController.swift in Sources */,
 				1D6D48EE278EE6C3004A8BFE /* Identifiable.swift in Sources */,
+				1D4EF9F627D08014008742D0 /* CredentialsDB.swift in Sources */,
 				1D652059278850D4003FCEEA /* MainController.swift in Sources */,
 				1D6D48F227968A77004A8BFE /* Task.swift in Sources */,
 				1D6520572785833C003FCEEA /* Constant.swift in Sources */,

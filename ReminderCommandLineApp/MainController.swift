@@ -8,6 +8,7 @@
 import Foundation
 class MainController {
     init() {
+        login()
         NotificationManager.startBackgroundAction()
         Constant.updateFromDB()
         NotificationManager.updateFromDB()
@@ -24,7 +25,7 @@ class MainController {
         outerLoop:
         while true {
             Printer.printToConsole("Select: \n1. add \n2. retrieve \n3. update \n4. delete \n5. change preferences \n6. exit \n7. no action \n")
-            let response = Input.getInteger(range: 1...7)
+            let response = Input.getInteger(range: 1...8)
             switch response {
             case 1:
                 controller.add()
@@ -51,6 +52,8 @@ class MainController {
                 break outerLoop
             case 7:
                 break
+            case 8:
+                print(ReminderDB.getAllRows())
             default:
                 Printer.printError("invalid case --unexpected")
             }
@@ -153,5 +156,69 @@ class MainController {
                 break
             }
         }
+    }
+    
+    func login() {
+        let credentialsDatabase = CredentialsDB()
+        enum Login: String, CaseIterable {
+            case login
+            case signUp
+        }
+        // ask login/sign-up
+        let response = Input.getEnumResponse(type: Login.self)
+        // if sign-up : signUp()
+        if response == .signUp {
+            signUp()
+        } else {
+            // else :
+            //  get username until it exists in database
+            var username = Input.getResponse(string: "Username")
+            var password = credentialsDatabase.getPassword(username:  username)
+            while true {
+                if password == nil {
+                    if Input.getBooleanResponse(string: "Sign-up") {
+                        signUp()
+                        return
+                    }
+                    Printer.printError("Username does not exists in database")
+                    username = Input.getResponse(string: "Username")
+                    password = credentialsDatabase.getPassword(username:  username)
+                } else {
+                    //  get password until it matches with username
+                    let passwordInput = Input.getResponse(string: "Password")
+                    if passwordInput != password {
+                        Printer.printError("Password did not match")
+                    } else {
+                        break
+                    }
+                }
+            }
+            CurrentUser.username = username
+            Printer.printToConsole("Logged In")
+            //  assign username to CurrentUser.username
+        }
+        
+    }
+    
+    func signUp() {
+        let credentialsDatabase = CredentialsDB()
+        // get username until it is not present in database
+        var username = Input.getResponse(string: "Username")
+        var passwordFromDB = credentialsDatabase.getPassword(username:  username)
+        while passwordFromDB != nil {
+            Printer.printError("Username already exists")
+            username = Input.getResponse(string: "Username")
+            passwordFromDB = credentialsDatabase.getPassword(username:  username)
+        }
+        let password = Input.getResponse(string: "Password")
+        // add to db
+        while credentialsDatabase.insert(username: username, password: password) == false {
+            Printer.printToConsole("Failed to add username to db")
+            Printer.printToConsole("Retrying...")
+            sleep(1)
+        }
+        CurrentUser.username = username
+        Printer.printToConsole("Logged In")
+        //  assign username to CurrentUser.username
     }
 }
